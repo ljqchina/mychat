@@ -1,6 +1,5 @@
 /*
-  This example program provides a trivial server program that listens for TCP
-  connections on port 9995.  When they arrive, it writes a short message to
+  This example program provides a trivial server program that listens for TCP connections on port 9995.  When they arrive, it writes a short message to
   each client connection, and closes each connection once it is flushed.
 
   Where possible, it exits cleanly in response to a SIGINT (ctrl-c).
@@ -14,20 +13,12 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-/*
-#include <event2/bufferevent.h>
-#include <event2/buffer.h>
-#include <event2/listener.h>
-#include <event2/util.h>
-#include <event2/event.h>
-*/
-
 #include "tcp.h"
 
 static void conn_readcb(struct bufferevent *bev, void *user_data)
 {
-	tcp_server *ts = (tcp_server*)user_data;
-	printf("conn_readcb: ts:%p, cb:%p\n", ts, ts->readcb);
+	TcpServer *ts = (TcpServer*)user_data;
+	fprintf(stderr, "conn_readcb: ts:%p, cb:%p\n", ts, ts->readcb);
 	if (ts && ts->readcb)
 		ts->readcb(bev, ts->readcb_arg);
 }
@@ -46,7 +37,7 @@ static void conn_writecb(struct bufferevent *bev, void *user_data)
 static void conn_eventcb(struct bufferevent *bev, short events, void *user_data)
 {
 	printf("conn_eventcb event:0x%02x\n", events);
-	tcp_server *ts = (tcp_server *)user_data;
+	TcpServer *ts = (TcpServer *)user_data;
 	if (events & BEV_EVENT_EOF) {
 		printf("Connection closed.\n");
 	} else if (events & BEV_EVENT_ERROR) {
@@ -57,55 +48,54 @@ static void conn_eventcb(struct bufferevent *bev, short events, void *user_data)
 	 * timeouts */
 	if (events != BEV_EVENT_CONNECTED) {
 		bufferevent_free(bev);
-		ts->bev = nullptr;
+		ts->m_pBev = nullptr;
 	}
 }
 
 static void listener_cb(struct evconnlistener *listener, evutil_socket_t fd, struct sockaddr *sa, int socklen, void *user_data)
 {
 	printf("listener:%p, fd:%d\n", user_data, fd);
-	tcp_server *ts = static_cast<struct tcp_server *>(user_data);
+	TcpServer *ts = static_cast<struct TcpServer *>(user_data);
 
-	ts->bev = bufferevent_socket_new(ts->base, fd, BEV_OPT_CLOSE_ON_FREE);
-	if (!ts->bev) {
+	ts->m_pBev = bufferevent_socket_new(ts->m_pBase, fd, BEV_OPT_CLOSE_ON_FREE);
+	if (!ts->m_pBev) {
 		fprintf(stderr, "Error constructing bufferevent!");
-		event_base_loopbreak(ts->base);
+		event_base_loopbreak(ts->m_pBase);
 		return;
 	}
-	bufferevent_setcb(ts->bev, conn_readcb, conn_writecb, conn_eventcb, user_data);
-	bufferevent_enable(ts->bev, EV_WRITE);
-	bufferevent_enable(ts->bev, EV_READ);
+	bufferevent_setcb(ts->m_pBev, conn_readcb, conn_writecb, conn_eventcb, user_data);
+	bufferevent_enable(ts->m_pBev, EV_WRITE);
+	bufferevent_enable(ts->m_pBev, EV_READ);
 
 	char str[100];
 	for(int i=4; i<100; i++)
 		strcat(str+i, "a");
 	memcpy(str, "0100", 4);
-	bufferevent_write(ts->bev, str, strlen(str));
+	bufferevent_write(ts->m_pBev, str, strlen(str));
 }
 
-tcp_server::tcp_server(struct event_base *pbase)
-	: base(pbase)
-	, bev(nullptr)
-	, listener(nullptr)
+TcpServer::TcpServer(struct event_base *pbase)
+	: m_pBase(pbase)
+	, m_pBev(nullptr)
+	, m_pListener(nullptr)
 	, readcb_arg(nullptr)
 	, readcb(nullptr)
 {
 }
 
-tcp_server::~tcp_server()
+TcpServer::~TcpServer()
 {
-	stop();
+	Stop();
 }
 
-int tcp_server::start(uint16_t port)
+int TcpServer::Start(uint16_t port)
 {
 	struct sockaddr_in sin = {0};
 
 	sin.sin_family = AF_INET;
 	sin.sin_port = htons(port);
-
-	listener = evconnlistener_new_bind(base, listener_cb, (void *)this, LEV_OPT_REUSEABLE|LEV_OPT_CLOSE_ON_FREE, -1, (struct sockaddr*)&sin, sizeof(sin));
-	if (!listener) {
+	m_pListener = evconnlistener_new_bind(m_pBase, listener_cb, (void *)this, LEV_OPT_REUSEABLE|LEV_OPT_CLOSE_ON_FREE, -1, (struct sockaddr*)&sin, sizeof(sin));
+	if (!m_pListener) {
 		fprintf(stderr, "Could not create a listener!\n");
 		return 1;
 	}
@@ -113,15 +103,15 @@ int tcp_server::start(uint16_t port)
 	return 0;
 }
 
-void tcp_server::stop()
+void TcpServer::Stop()
 {
-	if (listener)
-		evconnlistener_free(listener);
+	if (m_pListener)
+		evconnlistener_free(m_pListener);
 
-	printf("tcp_server stop done\n");
+	printf("TcpServer stop done\n");
 }
 
-void tcp_server::setReadcb(readcb_t cb, void *arg)
+void TcpServer::SetReadcb(readcb_t cb, void *arg)
 {
 	readcb = cb;
 	readcb_arg = arg;

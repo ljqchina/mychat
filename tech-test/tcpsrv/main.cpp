@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include <signal.h>
-#include "tcp.h"
+#include "work.h"
 
 using namespace std;
 
@@ -22,16 +22,16 @@ int main()
 
 	base = event_base_new();
 
-	tcp_server *ts = new tcp_server(base);
-
-	ts->start(4567);
-
 	signal_event = evsignal_new(base, SIGINT, signal_cb, (void *)base);
 	event_add(signal_event, nullptr);
-	
+
+	//work relation
+	Work pwk(base);
+	pwk.Init();
+	pwk.Start();
+
 	event_base_dispatch(base);
 
-	delete ts;
 	event_free(signal_event);
 	event_base_free(base);
 

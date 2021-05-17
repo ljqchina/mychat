@@ -4,6 +4,7 @@
 #include <QHostAddress>
 #include <iostream>
 #include <sys/time.h>
+#include <unistd.h>
 
 using namespace std;
 
@@ -19,7 +20,7 @@ Widget::Widget(QWidget *parent) :
 
     QHostAddress serverIp;
     short port = 19000;
-    serverIp.setAddress("192.168.10.123");
+    serverIp.setAddress("192.168.10.141");
 
     cout << "connect to host\n" << endl;
     sock.connectToHost(serverIp,port);
@@ -33,6 +34,12 @@ Widget::~Widget()
 void Widget::onConnected()
 {
     cout << "onConnected\n" << endl;
+    //while(1)
+    {
+        int ret = sock.write("abc", 3);
+        cout << "send:" << "abc" << "," << ret << endl;
+        //sleep(2);
+    }
 }
 
 void Widget::onDisconnected()
@@ -51,12 +58,13 @@ void Widget::slotDataRecived()
     qint64 l = sock.read(data, len - 4);
     cout << "l:" << l << ", body:" << data << endl;
 
-    sock.write("abc", 3);
+    int ret = 0;
+    ret = sock.write("abc", 3);
+    ret = sock.write("abc", 3);
+    cout << "send:" << "abc" << "," << ret << endl;
+
     //sock.close();
-    while(1)
-    {
-        ;
-    }
+
 }
 
 
