@@ -48,7 +48,8 @@ static void conn_eventcb(struct bufferevent *bev, short events, void *user_data)
 	 * timeouts */
 	if (events != BEV_EVENT_CONNECTED) {
 		bufferevent_free(bev);
-		ts->m_pBev = nullptr;
+		if (ts && ts->closecb)
+			ts->closecb(bev, ts->closecb_arg);
 	}
 }
 
@@ -115,4 +116,10 @@ void TcpServer::SetReadcb(readcb_t cb, void *arg)
 {
 	readcb = cb;
 	readcb_arg = arg;
+}
+
+void TcpServer::SetClosecb(closecb_t cb, void *arg)
+{
+	closecb = cb;
+	closecb_arg = arg;
 }

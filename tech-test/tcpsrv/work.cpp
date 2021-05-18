@@ -17,6 +17,13 @@ static void OnRead(struct bufferevent *bev, void *arg)
 	fprintf(stderr, "%s:[%s]\n", __func__, data);
 }
 
+static void OnClose(struct bufferevent *bev, void *arg)
+{
+	Work *pwk = static_cast<Work *>(arg);
+	fprintf(stderr, "OnClose\n");
+	fprintf(stderr, "==========================\n");
+}
+
 Work::Work(struct event_base *base)
 	: m_pBase(base)
 	, m_TcpServer(nullptr)
@@ -42,6 +49,7 @@ int Work::Init()
 	//start tcp server
 	m_TcpServer = new TcpServer(m_pBase);
 	m_TcpServer->SetReadcb(OnRead, this);
+	m_TcpServer->SetClosecb(OnClose, this);
 
 	return 0;
 }
