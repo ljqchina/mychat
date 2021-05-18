@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -9,9 +10,15 @@
 #include <unistd.h>
 #include <signal.h>
 
+static int bexit = 0;
 void signal_handle(int sig)
 {
 	printf("SIG:%d\n", sig);
+	if(sig == SIGINT)
+	{
+		bexit = 1;
+		printf("SIGINT exit\n");
+	}
 }
 
 int myconnect(const char *ip, int port)
@@ -47,6 +54,7 @@ int main(int argc, char **argv)
 	}
 
 	signal(SIGPIPE, signal_handle);
+	signal(SIGINT, signal_handle);
 
 	char ip[32];
 	int port;
@@ -69,7 +77,7 @@ int main(int argc, char **argv)
 
 	i = 0;
 	char buf[1024];
-	while(1)
+	while(bexit == 0)
 	{
 		memset(buf, 0, sizeof(buf));
 		sprintf(buf, "aaa:%d", ++i);
@@ -79,6 +87,11 @@ int main(int argc, char **argv)
 		if(ret < 0)
 		{
 			printf("write error\n");
+			if(errno == EINTR)
+			{
+				printf("send EINTR\n");
+				continue;
+			}
 			//break;
 		}
 		else if(ret == 0)
@@ -92,7 +105,7 @@ int main(int argc, char **argv)
 		{
 			i = 0;
 			close(sock);
-			while((sock = myconnect(ip, port)) < 0)
+			while((sock = myconnect(ip, port)) < 0 && bexit == 0)
 			{
 				printf("reconnectting %d ...\n", ++i);
 				sleep(2);
@@ -102,7 +115,14 @@ int main(int argc, char **argv)
 			continue;
 		}
 		sleep(3);
+		if(errno == EINTR)
+		{
+			printf("sleep EINTR\n");
+			continue;
+		}
 	}
+	close(sock);
+	printf("end\n");
 	return 0;
 }
 

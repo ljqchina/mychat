@@ -18,7 +18,7 @@
 static void conn_readcb(struct bufferevent *bev, void *user_data)
 {
 	TcpServer *ts = (TcpServer*)user_data;
-	fprintf(stderr, "conn_readcb: ts:%p, cb:%p\n", ts, ts->readcb);
+	//fprintf(stderr, "conn_readcb: ts:%p, cb:%p\n", ts, ts->readcb);
 	if (ts && ts->readcb)
 		ts->readcb(bev, ts->readcb_arg);
 }

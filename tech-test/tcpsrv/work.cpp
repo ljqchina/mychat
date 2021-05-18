@@ -15,6 +15,7 @@ static void OnRead(struct bufferevent *bev, void *arg)
 	memset(data, 0, sizeof(data));
 	bufferevent_read(bev, data, 100);
 	fprintf(stderr, "%s:[%s]\n", __func__, data);
+	fprintf(stderr, "--------------------------\n");
 }
 
 static void OnClose(struct bufferevent *bev, void *arg)
