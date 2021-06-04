@@ -7,6 +7,9 @@
 #include <event2/event.h>
 #include <event2/event_struct.h>
 
+#include <map>
+#include "Conn.h"
+
 typedef void (*readcb_t)(struct bufferevent *bev, void *arg);
 typedef void (*closecb_t)(struct bufferevent *bev, void *arg);
 
@@ -24,8 +27,9 @@ public:
 	void *closecb_arg;
 	closecb_t closecb;
 	struct event_base *m_pBase;
-	struct bufferevent *m_pBev;
 	struct evconnlistener *m_pListener;
+    std::map<struct bufferevent *, Conn *> m_bevConn;
+    //std::map<int, Conn *> m_bevConn;
 };
 
 #endif //__TCPSERVER_H__

@@ -1,10 +1,12 @@
 #include "tcp.h"
+//#include "Conn.h"
+#include <map>
 
-class Work
+class MyChat 
 {
 public:
-	Work(struct event_base *pbase);
-	~Work();
+	MyChat(struct event_base *pbase);
+	~MyChat();
 
 public:
 	int Init();

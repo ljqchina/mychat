@@ -58,26 +58,28 @@ static void listener_cb(struct evconnlistener *listener, evutil_socket_t fd, str
 	printf("listener:%p, fd:%d\n", user_data, fd);
 	TcpServer *ts = static_cast<struct TcpServer *>(user_data);
 
-	ts->m_pBev = bufferevent_socket_new(ts->m_pBase, fd, BEV_OPT_CLOSE_ON_FREE);
-	if (!ts->m_pBev) {
+	struct bufferevent *pBev = bufferevent_socket_new(ts->m_pBase, fd, BEV_OPT_CLOSE_ON_FREE);
+	if (!pBev) {
 		fprintf(stderr, "Error constructing bufferevent!");
 		event_base_loopbreak(ts->m_pBase);
 		return;
 	}
-	bufferevent_setcb(ts->m_pBev, conn_readcb, conn_writecb, conn_eventcb, user_data);
-	bufferevent_enable(ts->m_pBev, EV_WRITE);
-	bufferevent_enable(ts->m_pBev, EV_READ);
+	bufferevent_setcb(pBev, conn_readcb, conn_writecb, conn_eventcb, user_data);
+	bufferevent_enable(pBev, EV_WRITE);
+	bufferevent_enable(pBev, EV_READ);
+
+    //new connection, save
+    ts->m_bevConn[pBev] = new Conn();
 
 	char str[100];
 	for(int i=4; i<100; i++)
 		strcat(str+i, "a");
 	memcpy(str, "0100", 4);
-	bufferevent_write(ts->m_pBev, str, strlen(str));
+	bufferevent_write(pBev, str, strlen(str));
 }
 
 TcpServer::TcpServer(struct event_base *pbase)
 	: m_pBase(pbase)
-	, m_pBev(nullptr)
 	, m_pListener(nullptr)
 	, readcb_arg(nullptr)
 	, readcb(nullptr)

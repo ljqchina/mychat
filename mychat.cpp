@@ -10,7 +10,7 @@ static void timeout_cb(evutil_socket_t fd, short event, void *arg)
 
 static void OnRead(struct bufferevent *bev, void *arg)
 {
-	Work *pwk = static_cast<Work *>(arg);
+	MyChat *pmc = static_cast<MyChat *>(arg);
 	char data[1024];
 	memset(data, 0, sizeof(data));
 	bufferevent_read(bev, data, 100);
@@ -20,32 +20,32 @@ static void OnRead(struct bufferevent *bev, void *arg)
 
 static void OnClose(struct bufferevent *bev, void *arg)
 {
-	Work *pwk = static_cast<Work *>(arg);
+	MyChat *pmc = static_cast<MyChat *>(arg);
 	fprintf(stderr, "OnClose\n");
 	fprintf(stderr, "==========================\n");
 }
 
-Work::Work(struct event_base *base)
+MyChat::MyChat(struct event_base *base)
 	: m_pBase(base)
 	, m_TcpServer(nullptr)
 {
 }
 
-Work::~Work()
+MyChat::~MyChat()
 {
 	if(m_TcpServer)
 		delete m_TcpServer;
 }
 
-int Work::Init()
+int MyChat::Init()
 {
 	//add timer
-	/*
+    /*
 	struct timeval tv;
 	tv.tv_sec = 3;
 	event_assign(&timeout, m_pBase, -1, EV_PERSIST, timeout_cb, this);
 	evtimer_add(&timeout, &tv);
-	*/
+    */
 
 	//start tcp server
 	m_TcpServer = new TcpServer(m_pBase);
@@ -55,7 +55,7 @@ int Work::Init()
 	return 0;
 }
 
-int Work::Start()
+int MyChat::Start()
 {
 	m_TcpServer->Start(19000);
 	return 0;

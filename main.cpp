@@ -26,9 +26,9 @@ int main()
 	event_add(signal_event, nullptr);
 
 	//work relation
-	Work pwk(base);
-	pwk.Init();
-	pwk.Start();
+	MyChat mc(base);
+	mc.Init();
+	mc.Start();
 
 	event_base_dispatch(base);
 
