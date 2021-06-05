@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include <signal.h>
-#include "mychat.h"
+#include "MyChat.h"
 
 using namespace std;
 

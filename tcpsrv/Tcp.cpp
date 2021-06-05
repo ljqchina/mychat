@@ -13,7 +13,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#include "tcp.h"
+#include "Tcp.h"
 
 static void conn_readcb(struct bufferevent *bev, void *user_data)
 {
@@ -47,7 +47,7 @@ static void conn_eventcb(struct bufferevent *bev, short events, void *user_data)
 	/* None of the other events can happen here, since we haven't enabled
 	 * timeouts */
 	if (events != BEV_EVENT_CONNECTED) {
-		bufferevent_free(bev);
+		//bufferevent_free(bev); //free in Conn
 		if (ts && ts->closecb)
 			ts->closecb(bev, ts->closecb_arg);
 	}
@@ -68,11 +68,13 @@ static void listener_cb(struct evconnlistener *listener, evutil_socket_t fd, str
 	bufferevent_enable(pBev, EV_WRITE);
 	bufferevent_enable(pBev, EV_READ);
 
+/*
 	char str[100];
 	for(int i=4; i<100; i++)
 		strcat(str+i, "a");
 	memcpy(str, "0100", 4);
 	bufferevent_write(pBev, str, strlen(str));
+    */
 }
 
 TcpServer::TcpServer(struct event_base *pbase)

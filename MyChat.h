@@ -1,6 +1,6 @@
-#include "tcp.h"
-//#include "Conn.h"
 #include <map>
+#include "Tcp.h"
+#include "Conn.h"
 
 class MyChat 
 {
@@ -17,6 +17,11 @@ public:
 	struct event timeout;
 
 private:
+    //tcp服务器
 	TcpServer *m_TcpServer;
+
+public:
+    //在线用户连接
+    std::map<struct bufferevent *, Conn *> m_Conn;
 };
 

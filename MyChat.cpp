@@ -1,5 +1,5 @@
 #include <string.h>
-#include "mychat.h"
+#include "MyChat.h"
 
 using namespace std;
 
@@ -16,6 +16,25 @@ static void OnRead(struct bufferevent *bev, void *arg)
 	bufferevent_read(bev, data, 100);
 	fprintf(stderr, "%s:[%s]\n", __func__, data);
 	fprintf(stderr, "--------------------------\n");
+
+    //解析消息
+
+    //注册
+
+    //登录
+    std::map<struct bufferevent *, Conn *>::iterator ite = pmc->m_Conn.find(bev);
+    if(ite == pmc->m_Conn.end())
+    {
+        int userid = 1;
+        pmc->m_Conn.insert(std::pair<struct bufferevent *, Conn *>(bev, new Conn(userid, bev)));
+        fprintf(stderr, "new user:%p\n", bev);
+    }
+    else
+    {
+        fprintf(stderr, "old user:%p\n", bev);
+    }
+
+    //
 }
 
 static void OnClose(struct bufferevent *bev, void *arg)
@@ -23,6 +42,15 @@ static void OnClose(struct bufferevent *bev, void *arg)
 	MyChat *pmc = static_cast<MyChat *>(arg);
 	fprintf(stderr, "OnClose\n");
 	fprintf(stderr, "==========================\n");
+
+    std::map<struct bufferevent *, Conn *>::iterator ite = pmc->m_Conn.find(bev);
+    if(ite != pmc->m_Conn.end())
+    {
+        fprintf(stderr, "user logout:%p\n", bev);
+        Conn *pConn = ite->second;
+        pConn->Close();
+        pmc->m_Conn.erase(ite);
+    }
 }
 
 MyChat::MyChat(struct event_base *base)
