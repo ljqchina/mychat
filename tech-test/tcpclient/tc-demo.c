@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 	while(bexit == 0)
 	{
 		memset(buf, 0, sizeof(buf));
-		sprintf(buf, "aaa:%d", ++i);
+		sprintf(buf, "{\"msgtype\":%d}", ++i);
 		printf("%s\n", buf);
 		int len = strlen(buf);
 		int ret = send(sock, buf, len, 0);

@@ -17,7 +17,10 @@ static void OnRead(struct bufferevent *bev, void *arg)
 	fprintf(stderr, "%s:[%s]\n", __func__, data);
 	fprintf(stderr, "--------------------------\n");
 
-    //解析消息
+    //解析消息类型
+    int msgType = 0;
+    pmc->m_Protocol.ParseMsgType(std::string(data), msgType);
+    fprintf(stderr, "msgType:%d\n", msgType);
 
     //注册
 
