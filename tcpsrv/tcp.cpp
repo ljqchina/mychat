@@ -68,9 +68,6 @@ static void listener_cb(struct evconnlistener *listener, evutil_socket_t fd, str
 	bufferevent_enable(pBev, EV_WRITE);
 	bufferevent_enable(pBev, EV_READ);
 
-    //new connection, save
-    ts->m_bevConn[pBev] = new Conn();
-
 	char str[100];
 	for(int i=4; i<100; i++)
 		strcat(str+i, "a");
