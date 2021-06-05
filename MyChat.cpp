@@ -22,11 +22,11 @@ static void OnRead(struct bufferevent *bev, void *arg)
     //注册
 
     //登录
-    std::map<struct bufferevent *, Conn *>::iterator ite = pmc->m_Conn.find(bev);
-    if(ite == pmc->m_Conn.end())
+    int userid = 1;
+    Conn *pConn = pmc->m_UserConn.FindUser(userid);
+    if(pConn == nullptr)
     {
-        int userid = 1;
-        pmc->m_Conn.insert(std::pair<struct bufferevent *, Conn *>(bev, new Conn(userid, bev)));
+        pmc->m_UserConn.AddUser(new Conn(userid, bev));
         fprintf(stderr, "new user:%p\n", bev);
     }
     else
@@ -43,13 +43,13 @@ static void OnClose(struct bufferevent *bev, void *arg)
 	fprintf(stderr, "OnClose\n");
 	fprintf(stderr, "==========================\n");
 
-    std::map<struct bufferevent *, Conn *>::iterator ite = pmc->m_Conn.find(bev);
-    if(ite != pmc->m_Conn.end())
+    int userid = 1;
+    Conn *pConn = pmc->m_UserConn.FindUser(bev);
+    if(pConn != nullptr)
     {
         fprintf(stderr, "user logout:%p\n", bev);
-        Conn *pConn = ite->second;
         pConn->Close();
-        pmc->m_Conn.erase(ite);
+        pmc->m_UserConn.RemoveUser(pConn->m_UserId);
     }
 }
 
