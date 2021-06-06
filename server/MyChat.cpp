@@ -1,5 +1,7 @@
 #include <string.h>
 #include "MyChat.h"
+#include "msgtype.h"
+#include "errcode.h"
 
 using namespace std;
 
@@ -27,7 +29,7 @@ static void OnRead(struct bufferevent *bev, void *arg)
     switch(h.msgType)
     {
         //注册
-        case 2001:
+        case USER_REG_REQ:
         {
             RegisterInfo ri; 
             if(pmc->m_Protocol.ParseRegisterReq(ri, msg) != 0)
@@ -45,7 +47,7 @@ static void OnRead(struct bufferevent *bev, void *arg)
             }
 
 			//response
-			ri.header.msgType = 2002;
+			ri.header.msgType = USER_REG_RESP;
 			ri.header.respCode = 0;
 			ri.header.respText = "success";
 			pmc->m_Protocol.PackRegisterReq(ri, msg);

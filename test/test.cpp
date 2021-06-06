@@ -12,6 +12,7 @@
 #include <string>
 
 #include "Protocol.h"
+#include "msgtype.h"
 
 using namespace std;
 
@@ -58,7 +59,7 @@ void register_user(int sock)
     RegisterInfo ri;
 
     ri.header.version = "1.0.0.0";
-    ri.header.msgType = 2001;
+    ri.header.msgType = USER_REG_REQ;
     ri.userId = "13000000001";
     ri.nickName = "abc";
     ri.password = "123";
@@ -68,15 +69,15 @@ void register_user(int sock)
     pt.PackRegisterReq(ri, msg);
     send(sock, msg.data(), msg.size(), 0);
 
-    fprintf(stderr, "%s:%s\n", __func__, msg.data());
+    fprintf(stderr, "%s request:%s\n\n", __func__, msg.data());
 
 	//receive response msg
 	char data[1024];
 	memset(data, 0, sizeof(data));
 	recv(sock, data, 1000, 0);
 
-    fprintf(stderr, "%s:%s\n", __func__, data);
-	fprintf(stderr, "---------------------------------------\n");
+    fprintf(stderr, "%s response:%s\n", __func__, data);
+	fprintf(stderr, "---------------------------------------\n\n");
 }
 
 int main(int argc, char **argv)

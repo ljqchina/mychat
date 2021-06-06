@@ -6,9 +6,7 @@
 #include <event2/util.h>
 #include <event2/event.h>
 #include <event2/event_struct.h>
-
 #include <map>
-#include "common.h"
 
 typedef void (*readcb_t)(struct bufferevent *bev, void *arg);
 typedef void (*closecb_t)(struct bufferevent *bev, void *arg);

@@ -1,4 +1,6 @@
 #include "Protocol.h"
+#include "msgtype.h"
+#include "errcode.h"
 
 Protocol::Protocol()
 {
@@ -82,7 +84,7 @@ int Protocol::PackRegisterReq(const RegisterInfo &ri, std::string &msg)
     w.String(ri.userId.data());
 
     //如果是响应报文，则仅设置响应字段
-    if(ri.header.msgType == 2002)
+    if(ri.header.msgType == USER_REG_RESP)
     {
         PackHeaderResp(w, ri.header);
         w.EndObject();
