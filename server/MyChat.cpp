@@ -20,12 +20,11 @@ static void OnRead(struct bufferevent *bev, void *arg)
     std::string msg(data);
 
     //解析消息类型
-    int msgType = 0;
-    std::string version;
-    pmc->m_Protocol.ParseHeader(msg, msgType, version);
-    fprintf(stderr, "msgType:%d, version:%s\n", msgType, version.data());
+    Header h;
+    pmc->m_Protocol.ParseHeader(msg, h);
+    fprintf(stderr, "msgType:%d, version:%s\n", h.msgType, h.version.data());
 
-    switch(msgType)
+    switch(h.msgType)
     {
         //注册
         case 2001:
@@ -38,7 +37,7 @@ static void OnRead(struct bufferevent *bev, void *arg)
             if(pConn == nullptr)
             {
                 pmc->m_UserConn.AddUser(new Conn(userid, bev));
-                fprintf(stderr, "new user:%p\n", bev);
+                fprintf(stderr, "new user:%p, userid:%s, nickname:%s\n", bev, ri.userId.data(), ri.nickName.data());
             }
             else
             {
@@ -63,7 +62,7 @@ static void OnRead(struct bufferevent *bev, void *arg)
             break;
         }
         default:
-            fprintf(stderr, "msgType error:%d\n", msgType);
+            fprintf(stderr, "msgType error:%d\n", h.msgType);
             break;
     }
 

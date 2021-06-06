@@ -7,18 +7,23 @@
 
 #include <string>
 
+typedef struct Header_
+{
+    int msgType;
+    int respCode;
+    std::string msgId;
+    std::string version;
+    std::string respText;
+}Header;
+
 typedef struct RegisterInfo_
 {
+    Header header;
     int sex;
     int age;
-    int msgType;
-    std::string msgId;
     std::string userId;
-    std::string version;
     std::string nickName;
     std::string password;
-    int respCode;
-    std::string respText;
 }RegisterInfo;
 
 class Protocol
@@ -28,8 +33,10 @@ public:
     ~Protocol();
 
 public:
-    int ParseHeader(const std::string &msg, int &msgType, std::string &version);
-    int ParseHeader(const rapidjson::Document &doc, int &msgType, std::string &version);
+    int ParseHeader(const std::string &msg, Header &h);
+    int ParseHeader(const rapidjson::Document &doc, Header &h);
+    int PackHeader(rapidjson::Writer<rapidjson::StringBuffer> &w, const Header &h);
+    int PackHeaderResp(rapidjson::Writer<rapidjson::StringBuffer> &w, const Header &h);
     int PackRegisterReq(const RegisterInfo &ri, std::string &msg);
     int ParseRegisterReq(RegisterInfo &ri, const std::string &msg);
 

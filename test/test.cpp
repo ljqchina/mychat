@@ -57,8 +57,8 @@ void register_user(int sock)
     Protocol pt;
     RegisterInfo ri;
 
-    ri.version = "1.0.0.0";
-    ri.msgType = 2001;
+    ri.header.version = "1.0.0.0";
+    ri.header.msgType = 2001;
     ri.userId = "13000000001";
     ri.nickName = "abc";
     ri.password = "123";
