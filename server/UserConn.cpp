@@ -8,9 +8,9 @@ UserConn::~UserConn()
 {
 }
 
-Conn *UserConn::FindUser(int userid)
+Conn *UserConn::FindUser(const std::string &userid)
 {
-    std::map<int, Conn *>::iterator ite =  m_Conn.find(userid);
+    std::map<std::string, Conn *>::iterator ite =  m_Conn.find(userid);
     if(ite != m_Conn.end())
         return ite->second;
     return nullptr;
@@ -18,7 +18,7 @@ Conn *UserConn::FindUser(int userid)
 
 Conn *UserConn::FindUser(void *pBev)
 {
-    std::map<int, Conn *>::iterator ite =  m_Conn.begin();
+    std::map<std::string, Conn *>::iterator ite =  m_Conn.begin();
     while(ite != m_Conn.end())
     {
         Conn *pConn = ite->second;
@@ -32,11 +32,11 @@ Conn *UserConn::FindUser(void *pBev)
 int UserConn::AddUser(Conn *pConn)
 {
     if(!UserConn::FindUser(pConn->m_UserId))
-        m_Conn.insert(std::pair<int, Conn *>(pConn->m_UserId, pConn));
+        m_Conn.insert(std::pair<std::string, Conn *>(pConn->m_UserId, pConn));
     return 0;
 }
 
-int UserConn::RemoveUser(int userid)
+int UserConn::RemoveUser(const std::string &userid)
 {
     m_Conn.erase(userid);
     return 0;

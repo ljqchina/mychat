@@ -1,6 +1,7 @@
 #include "Conn.h"
+#include <string.h>
 
-Conn::Conn(int userId, struct bufferevent *pBev)
+Conn::Conn(const std::string &userId, struct bufferevent *pBev)
     : m_UserId(userId)
     , m_pBev(pBev)
 {

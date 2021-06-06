@@ -16,8 +16,8 @@ public:
 public:
 	struct event_base *m_pBase;
 	struct event timeout;
-    UserConn m_UserConn;
-    Protocol m_Protocol;
+	UserConn m_UserConn;
+ 	Protocol m_Protocol;
 
 private:
     //tcp服务器

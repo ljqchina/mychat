@@ -69,6 +69,14 @@ void register_user(int sock)
     send(sock, msg.data(), msg.size(), 0);
 
     fprintf(stderr, "%s:%s\n", __func__, msg.data());
+
+	//receive response msg
+	char data[1024];
+	memset(data, 0, sizeof(data));
+	recv(sock, data, 1000, 0);
+
+    fprintf(stderr, "%s:%s\n", __func__, data);
+	fprintf(stderr, "---------------------------------------\n");
 }
 
 int main(int argc, char **argv)
@@ -102,8 +110,6 @@ int main(int argc, char **argv)
 	}
 
     //1.注册用户
-    register_user(sock);
-    sleep(3);
     register_user(sock);
 
 	close(sock);

@@ -32,33 +32,42 @@ static void OnRead(struct bufferevent *bev, void *arg)
             RegisterInfo ri; 
             if(pmc->m_Protocol.ParseRegisterReq(ri, msg) != 0)
                 break;
-            int userid = 1;
-            Conn *pConn = pmc->m_UserConn.FindUser(userid);
+            Conn *pConn = pmc->m_UserConn.FindUser(ri.userId);
             if(pConn == nullptr)
             {
-                pmc->m_UserConn.AddUser(new Conn(userid, bev));
+				pConn = new Conn(ri.userId, bev);
+                pmc->m_UserConn.AddUser(pConn);
                 fprintf(stderr, "new user:%p, userid:%s, nickname:%s\n", bev, ri.userId.data(), ri.nickName.data());
             }
             else
             {
                 fprintf(stderr, "old user:%p\n", bev);
             }
+
+			//response
+			ri.header.msgType = 2002;
+			ri.header.respCode = 0;
+			ri.header.respText = "success";
+			pmc->m_Protocol.PackRegisterReq(ri, msg);
+			fprintf(stderr, "register response:%s\n", msg.data());
+			pConn->Send(msg);
             break;
         }
         //登录
         case 2003:
         {
-            int userid = 1;
-            Conn *pConn = pmc->m_UserConn.FindUser(userid);
+			/*
+            Conn *pConn = pmc->m_UserConn.FindUser(ri.userId);
             if(pConn == nullptr)
             {
-                pmc->m_UserConn.AddUser(new Conn(userid, bev));
+                pmc->m_UserConn.AddUser(new Conn(ri.userId, bev));
                 fprintf(stderr, "new user:%p\n", bev);
             }
             else
             {
                 fprintf(stderr, "old user:%p\n", bev);
             }
+			 */
             break;
         }
         default:
@@ -75,7 +84,6 @@ static void OnClose(struct bufferevent *bev, void *arg)
 	fprintf(stderr, "OnClose\n");
 	fprintf(stderr, "==========================\n");
 
-    int userid = 1;
     Conn *pConn = pmc->m_UserConn.FindUser(bev);
     if(pConn != nullptr)
     {

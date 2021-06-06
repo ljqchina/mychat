@@ -15,7 +15,7 @@
 class Conn
 {
 public:
-    Conn(int userId, struct bufferevent *pBev);
+    Conn(const std::string &userId, struct bufferevent *pBev);
     ~Conn();
 
 public:
@@ -25,7 +25,7 @@ public:
 
 public:
     time_t m_LastTime;
-    int m_UserId;
+    std::string m_UserId;
     struct bufferevent *m_pBev;    
 };
 
