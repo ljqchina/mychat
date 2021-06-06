@@ -1,5 +1,5 @@
 LIB_PATH := ../lib/
-CFLAGS := -std=c++11
+CFLAGS := -std=c++11 -g
 LFLAGS := -lrt
 SRCS := $(wildcard *.cpp)
 OBJS := $(patsubst %.cpp,$(OBJ_DIR)%.o,$(SRCS))
@@ -11,6 +11,7 @@ INC_DIR := -I ../rapidjson
 
 $(BIN_DIR)$(TARGET) : $(OBJS)
 	g++ $(CFLAGS) $^ -shared -o $@ $(LFLAGS)
+	mv -f ./libprotocol.so $(LIB_PATH)
 
 $(OBJ_DIR)%.o : %.cpp
 	g++ $(CFLAGS) $(INC_DIR) -fPIC -c $< -o $@
@@ -18,7 +19,7 @@ $(OBJ_DIR)%.o : %.cpp
 .PHONY: install clean
 install :
 	#cp -f ./wipedisk.h $(INC_PATH)
-	cp -f ./libprotocol.so $(LIB_PATH)
+	mv -f ./libprotocol.so $(LIB_PATH)
 	#ldconfig
 
 clean:

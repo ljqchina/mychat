@@ -16,7 +16,6 @@ void Conn::Close()
     bufferevent_free(m_pBev);
 }
 
-
 int Conn::Send(const std::string &buff)
 {
     int ret = bufferevent_write(m_pBev, buff.data(), buff.size());

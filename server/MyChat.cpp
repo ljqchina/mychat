@@ -13,28 +13,58 @@ static void OnRead(struct bufferevent *bev, void *arg)
 	MyChat *pmc = static_cast<MyChat *>(arg);
 	char data[1024];
 	memset(data, 0, sizeof(data));
-	bufferevent_read(bev, data, 100);
+	bufferevent_read(bev, data, 1000);
 	fprintf(stderr, "%s:[%s]\n", __func__, data);
 	fprintf(stderr, "--------------------------\n");
 
+    std::string msg(data);
+
     //解析消息类型
     int msgType = 0;
-    pmc->m_Protocol.ParseMsgType(std::string(data), msgType);
-    fprintf(stderr, "msgType:%d\n", msgType);
+    std::string version;
+    pmc->m_Protocol.ParseHeader(msg, msgType, version);
+    fprintf(stderr, "msgType:%d, version:%s\n", msgType, version.data());
 
-    //注册
-
-    //登录
-    int userid = 1;
-    Conn *pConn = pmc->m_UserConn.FindUser(userid);
-    if(pConn == nullptr)
+    switch(msgType)
     {
-        pmc->m_UserConn.AddUser(new Conn(userid, bev));
-        fprintf(stderr, "new user:%p\n", bev);
-    }
-    else
-    {
-        fprintf(stderr, "old user:%p\n", bev);
+        //注册
+        case 2001:
+        {
+            RegisterInfo ri; 
+            if(pmc->m_Protocol.ParseRegisterReq(ri, msg) != 0)
+                break;
+            int userid = 1;
+            Conn *pConn = pmc->m_UserConn.FindUser(userid);
+            if(pConn == nullptr)
+            {
+                pmc->m_UserConn.AddUser(new Conn(userid, bev));
+                fprintf(stderr, "new user:%p\n", bev);
+            }
+            else
+            {
+                fprintf(stderr, "old user:%p\n", bev);
+            }
+            break;
+        }
+        //登录
+        case 2003:
+        {
+            int userid = 1;
+            Conn *pConn = pmc->m_UserConn.FindUser(userid);
+            if(pConn == nullptr)
+            {
+                pmc->m_UserConn.AddUser(new Conn(userid, bev));
+                fprintf(stderr, "new user:%p\n", bev);
+            }
+            else
+            {
+                fprintf(stderr, "old user:%p\n", bev);
+            }
+            break;
+        }
+        default:
+            fprintf(stderr, "msgType error:%d\n", msgType);
+            break;
     }
 
     //
