@@ -26,6 +26,14 @@ typedef struct RegisterInfo_
     std::string password;
 }RegisterInfo;
 
+typedef struct LoginInfo_
+{
+	Header header;
+	int termType;
+    std::string userId;
+    std::string password;
+}LoginInfo;
+
 class Protocol
 {
 public:
@@ -36,10 +44,17 @@ public:
     int ParseHeader(const std::string &msg, Header &h);
     int ParseHeader(const rapidjson::Document &doc, Header &h);
     int PackHeader(rapidjson::Writer<rapidjson::StringBuffer> &w, const Header &h);
+	//响应报文增加响应字段
     int PackHeaderResp(rapidjson::Writer<rapidjson::StringBuffer> &w, const Header &h);
-    int PackRegisterReq(const RegisterInfo &ri, std::string &msg);
-    int ParseRegisterReq(RegisterInfo &ri, const std::string &msg);
+	//打包注册用户报文
+    int PackRegister(const RegisterInfo &info, std::string &msg);
+	//解析注册用户报文
+    int ParseRegister(RegisterInfo &info, const std::string &msg);
 
+	//打包登录报文
+    int PackLogin(const LoginInfo &info, std::string &msg);
+	//解析登录报文
+    int ParseLogin(LoginInfo &info, const std::string &msg);
 private:
 
 };

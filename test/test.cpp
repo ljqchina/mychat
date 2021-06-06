@@ -52,7 +52,7 @@ int myconnect(const char *ip, int port)
 }
 
 //注册消息
-void register_user(int sock)
+void user_register(int sock)
 {
     string msg;
     Protocol pt;
@@ -66,7 +66,7 @@ void register_user(int sock)
     ri.sex = 1;
     ri.age = 20;
 
-    pt.PackRegisterReq(ri, msg);
+    pt.PackRegister(ri, msg);
     send(sock, msg.data(), msg.size(), 0);
 
     fprintf(stderr, "%s request:%s\n\n", __func__, msg.data());
@@ -79,6 +79,35 @@ void register_user(int sock)
     fprintf(stderr, "%s response:%s\n", __func__, data);
 	fprintf(stderr, "---------------------------------------\n\n");
 }
+
+//登录消息
+void user_login(int sock)
+{
+    string msg;
+    Protocol pt;
+    LoginInfo info;
+
+    info.header.version = "1.0.0.0";
+    info.header.msgType = USER_LOGIN_REQ;
+    info.userId = "13000000001";
+    info.password = "123";
+    info.termType = 1;
+
+    pt.PackLogin(info, msg);
+    send(sock, msg.data(), msg.size(), 0);
+
+    fprintf(stderr, "%s request:%s\n\n", __func__, msg.data());
+
+	//receive response msg
+	char data[1024];
+	memset(data, 0, sizeof(data));
+	recv(sock, data, 1000, 0);
+
+    fprintf(stderr, "%s response:%s\n", __func__, data);
+	fprintf(stderr, "---------------------------------------\n\n");
+}
+
+
 
 int main(int argc, char **argv)
 {
@@ -110,8 +139,13 @@ int main(int argc, char **argv)
 		sleep(2);
 	}
 
-    //1.注册用户
-    register_user(sock);
+    //1. 用户注册
+    //user_register(sock);
+
+	//2. 用户登录
+    user_login(sock);
+	sleep(3);
+    user_login(sock);
 
 	close(sock);
 	printf("end\n");

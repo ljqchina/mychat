@@ -32,7 +32,7 @@ static void OnRead(struct bufferevent *bev, void *arg)
         case USER_REG_REQ:
         {
             RegisterInfo ri; 
-            if(pmc->m_Protocol.ParseRegisterReq(ri, msg) != 0)
+            if(pmc->m_Protocol.ParseRegister(ri, msg) != 0)
                 break;
             Conn *pConn = pmc->m_UserConn.FindUser(ri.userId);
             if(pConn == nullptr)
@@ -50,26 +50,36 @@ static void OnRead(struct bufferevent *bev, void *arg)
 			ri.header.msgType = USER_REG_RESP;
 			ri.header.respCode = 0;
 			ri.header.respText = "success";
-			pmc->m_Protocol.PackRegisterReq(ri, msg);
+			pmc->m_Protocol.PackRegister(ri, msg);
 			fprintf(stderr, "register response:%s\n", msg.data());
 			pConn->Send(msg);
             break;
         }
         //登录
-        case 2003:
+        case USER_LOGIN_REQ:
         {
-			/*
-            Conn *pConn = pmc->m_UserConn.FindUser(ri.userId);
+            LoginInfo info; 
+            if(pmc->m_Protocol.ParseLogin(info, msg) != 0)
+                break;
+            Conn *pConn = pmc->m_UserConn.FindUser(info.userId);
             if(pConn == nullptr)
             {
-                pmc->m_UserConn.AddUser(new Conn(ri.userId, bev));
-                fprintf(stderr, "new user:%p\n", bev);
+				pConn = new Conn(info.userId, bev);
+                pmc->m_UserConn.AddUser(pConn);
+                fprintf(stderr, "login user:%p\n", bev);
             }
             else
             {
-                fprintf(stderr, "old user:%p\n", bev);
+                fprintf(stderr, "login already user:%p\n", bev);
             }
-			 */
+
+			//response
+			info.header.msgType = USER_LOGIN_RESP;
+			info.header.respCode = 0;
+			info.header.respText = "success";
+			pmc->m_Protocol.PackLogin(info, msg);
+			fprintf(stderr, "login response:%s\n", msg.data());
+			pConn->Send(msg);
             break;
         }
         default:
