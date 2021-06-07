@@ -2,6 +2,7 @@
 #include <string>
 #include <signal.h>
 #include "MyChat.h"
+#include "db.h"
 
 using namespace std;
 
@@ -24,6 +25,16 @@ int main()
 
 	signal_event = evsignal_new(base, SIGINT, signal_cb, (void *)base);
 	event_add(signal_event, nullptr);
+
+	const char *dbfile = "./data/mychat.db";
+	int ret = db::open(dbfile);
+	printf("db::open ret:%d\n", ret);
+
+	string userId("123456");
+	printf("db::IsRegistered:%d\n", db::user::IsRegistered(userId));
+
+	ret = db::close();
+	printf("db::close ret:%d\n", ret);
 
 	//work relation
 	MyChat mc(base);

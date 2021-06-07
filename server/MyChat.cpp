@@ -2,6 +2,7 @@
 #include "MyChat.h"
 #include "msgtype.h"
 #include "errcode.h"
+#include "db.h"
 
 using namespace std;
 
@@ -145,7 +146,12 @@ int MyChat::ProRegister(struct bufferevent *bev, const std::string &msg)
 		return -1;
 
 	//检查是否已经注册,如果已经注册提示已经注册
-
+	if(db::user::IsRegistered(info.userId))
+	{
+		fprintf(stderr, "user:%p, %s is already a register user\n", bev, info.userId.data());
+		//response msg here
+		return 0;
+	}
 
 	//未注册则进行注册
 	Conn *pConn = m_UserConn.FindUser(info.userId);
