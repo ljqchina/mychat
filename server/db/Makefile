@@ -7,7 +7,7 @@ TARGET := libdb.so
 
 all : $(BIN_DIR)$(TARGET) 
 
-INC_DIR := -I ../rapidjson
+INC_DIR := -I../../rapidjson -I../../protocol
 
 $(BIN_DIR)$(TARGET) : $(OBJS)
 	g++ $(CFLAGS) $^ -shared -o $@ $(LFLAGS)

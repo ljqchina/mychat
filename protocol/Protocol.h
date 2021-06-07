@@ -27,9 +27,14 @@ typedef struct RegisterInfo_
     Header header;
     int sex;
     int age;
+	int type;
+	int status;
     std::string userId;
     std::string nickName;
     std::string password;
+	std::string email;
+	std::string mobile;
+	std::string address;
 }RegisterInfo;
 
 typedef struct LoginInfo_

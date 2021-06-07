@@ -153,7 +153,13 @@ int MyChat::ProRegister(struct bufferevent *bev, const std::string &msg)
 		return 0;
 	}
 
-	//未注册则进行注册
+	//未注册则进行注册,存储到数据库用户信息表
+	if(db::user::RegisterUser(info) != 0)
+	{
+		fprintf(stderr, "db::user::RegisterUser failed, userid:%s\n", info.userId.data());
+		return -1;
+	}
+
 	Conn *pConn = m_UserConn.FindUser(info.userId);
 	if(pConn != nullptr)
 	{

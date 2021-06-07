@@ -4,7 +4,7 @@
 //#include <sqlite3.h>
 #include <sqlcipher/sqlite3.h>
 #include <string>
-
+#include "Protocol.h"
 
 namespace db
 {
@@ -15,6 +15,7 @@ namespace db
 	namespace user
 	{
 		bool IsRegistered(const std::string &userId);
+		int RegisterUser(const RegisterInfo &info);
 	};
 };
 

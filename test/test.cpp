@@ -166,15 +166,15 @@ int main(int argc, char **argv)
 	}
 
     //1. 用户注册
-    //user_register(sock);
+    user_register(sock);
 	//sleep(3);
 
 	//2. 用户登录
-    user_login(sock);
-	sleep(3);
+    //user_login(sock);
+	//sleep(3);
 
 	//3. 用户注销
-    user_logout(sock);
+    //user_logout(sock);
 
 	close(sock);
 	printf("end\n");
