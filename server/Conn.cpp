@@ -1,5 +1,4 @@
 #include "Conn.h"
-#include <string.h>
 
 Conn::Conn(const std::string &userId, struct bufferevent *pBev)
     : m_UserId(userId)

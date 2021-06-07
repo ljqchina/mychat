@@ -16,6 +16,12 @@ typedef struct Header_
     std::string respText;
 }Header;
 
+typedef struct HeartInfo_
+{
+	Header header;
+	std::string userId;
+}HeartInfo;
+
 typedef struct RegisterInfo_
 {
     Header header;
@@ -34,6 +40,13 @@ typedef struct LoginInfo_
     std::string password;
 }LoginInfo;
 
+typedef struct LogoutInfo_
+{
+	Header header;
+	int termType;
+    std::string userId;
+}LogoutInfo;
+
 class Protocol
 {
 public:
@@ -41,11 +54,19 @@ public:
     ~Protocol();
 
 public:
-    int ParseHeader(const std::string &msg, Header &h);
-    int ParseHeader(const rapidjson::Document &doc, Header &h);
+	//打包报文头
     int PackHeader(rapidjson::Writer<rapidjson::StringBuffer> &w, const Header &h);
 	//响应报文增加响应字段
     int PackHeaderResp(rapidjson::Writer<rapidjson::StringBuffer> &w, const Header &h);
+	//解析报文头
+    int ParseHeader(const std::string &msg, Header &h);
+    int ParseHeader(const rapidjson::Document &doc, Header &h);
+
+	//打包心跳包消息
+	int PackHeart(const HeartInfo &info, std::string &msg);
+	//解析心跳包消息
+	int ParseHeart(HeartInfo &info, const std::string &msg);
+
 	//打包注册用户报文
     int PackRegister(const RegisterInfo &info, std::string &msg);
 	//解析注册用户报文
@@ -55,6 +76,11 @@ public:
     int PackLogin(const LoginInfo &info, std::string &msg);
 	//解析登录报文
     int ParseLogin(LoginInfo &info, const std::string &msg);
+
+	//打包注销报文
+    int PackLogout(const LogoutInfo &info, std::string &msg);
+	//解析注销报文
+    int ParseLogout(LogoutInfo &info, const std::string &msg);
 private:
 
 };

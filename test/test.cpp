@@ -107,6 +107,32 @@ void user_login(int sock)
 	fprintf(stderr, "---------------------------------------\n\n");
 }
 
+//注销消息
+void user_logout(int sock)
+{
+    string msg;
+    Protocol pt;
+    LogoutInfo info;
+
+    info.header.version = "1.0.0.0";
+    info.header.msgType = USER_LOGOUT_REQ;
+    info.userId = "13000000001";
+    info.termType = 1;
+
+    pt.PackLogout(info, msg);
+    send(sock, msg.data(), msg.size(), 0);
+
+    fprintf(stderr, "%s request:%s\n\n", __func__, msg.data());
+
+	//receive response msg
+	char data[1024];
+	memset(data, 0, sizeof(data));
+	recv(sock, data, 1000, 0);
+
+    fprintf(stderr, "%s response:%s\n", __func__, data);
+	fprintf(stderr, "---------------------------------------\n\n");
+}
+
 
 
 int main(int argc, char **argv)
@@ -141,11 +167,14 @@ int main(int argc, char **argv)
 
     //1. 用户注册
     //user_register(sock);
+	//sleep(3);
 
 	//2. 用户登录
     user_login(sock);
 	sleep(3);
-    user_login(sock);
+
+	//3. 用户注销
+    user_logout(sock);
 
 	close(sock);
 	printf("end\n");

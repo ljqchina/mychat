@@ -1,4 +1,5 @@
 #include <map>
+#include <string>
 #include "Tcp.h"
 #include "UserConn.h"
 #include "Protocol.h"
@@ -12,6 +13,10 @@ public:
 public:
 	int Init();
 	int Start();
+	int ProHeart(struct bufferevent *bev, const std::string &msg);
+	int ProRegister(struct bufferevent *bev, const std::string &msg);
+	int ProLogin(struct bufferevent *bev, const std::string &msg);
+	int ProLogout(struct bufferevent *bev, const std::string &msg);
 
 public:
 	struct event_base *m_pBase;

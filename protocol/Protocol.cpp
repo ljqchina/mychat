@@ -71,6 +71,54 @@ int Protocol::PackHeaderResp(rapidjson::Writer<rapidjson::StringBuffer> &w, cons
    return 0; 
 }
 
+//打包心跳包消息
+int Protocol::PackHeart(const HeartInfo &info, std::string &msg)
+{
+    rapidjson::StringBuffer buf;
+    rapidjson::Writer<rapidjson::StringBuffer> w(buf);
+
+    w.StartObject();
+
+    PackHeader(w, info.header);
+
+    w.Key("userid");
+    w.String(info.userId.data());
+
+    //如果是响应报文，则仅设置响应字段
+    if(info.header.msgType == SYS_HEART_RESP)
+    {
+        PackHeaderResp(w, info.header);
+        w.EndObject();
+        msg = buf.GetString();
+        return 0;
+    }
+
+	w.EndObject();
+	msg = buf.GetString();
+	return 0;
+}
+
+//解析心跳包消息
+int Protocol::ParseHeart(HeartInfo &info, const std::string &msg)
+{
+    rapidjson::Document doc;
+    if(doc.Parse(msg.data()).HasParseError())
+        return -1;
+
+    if(ParseHeader(doc, info.header) != 0)
+    {
+        fprintf(stderr, "Parse Header error from json string:\n");
+        fprintf(stderr, "%s\n", msg.data());
+        return -1;
+    }
+
+    if(!doc.HasMember("userid"))
+        return -1;
+    info.userId = doc["userid"].GetString();
+    return 0;
+}
+
+//打包注册消息
 int Protocol::PackRegister(const RegisterInfo &info, std::string &msg)
 {
     rapidjson::StringBuffer buf;
@@ -109,14 +157,13 @@ int Protocol::PackRegister(const RegisterInfo &info, std::string &msg)
     return 0;
 }
 
+//解析注册消息
 int Protocol::ParseRegister(RegisterInfo &info, const std::string &msg)
 {
     rapidjson::Document doc;
     if(doc.Parse(msg.data()).HasParseError())
         return -1;
 
-    int msgType;
-    std::string version;
     if(ParseHeader(doc, info.header) != 0)
     {
         fprintf(stderr, "Parse Header error from json string:\n");
@@ -146,7 +193,7 @@ int Protocol::ParseRegister(RegisterInfo &info, const std::string &msg)
     return 0; 
 }
 
-
+//打包登录消息
 int Protocol::PackLogin(const LoginInfo &info, std::string &msg)
 {
 	rapidjson::StringBuffer buf;
@@ -178,14 +225,13 @@ int Protocol::PackLogin(const LoginInfo &info, std::string &msg)
 	return 0;
 }
 
+//解析登录消息
 int Protocol::ParseLogin(LoginInfo &info, const std::string &msg)
 {
 	rapidjson::Document doc;
     if(doc.Parse(msg.data()).HasParseError())
         return -1;
 
-    int msgType;
-    std::string version;
     if(ParseHeader(doc, info.header) != 0)
     {
         fprintf(stderr, "Parse Header error from json string:\n");
@@ -200,6 +246,59 @@ int Protocol::ParseLogin(LoginInfo &info, const std::string &msg)
 	if(!doc.HasMember("password"))
         return -1;
     info.password = doc["password"].GetString();
+
+    if(!doc.HasMember("termtype"))
+        return -1;
+    info.termType = doc["termtype"].GetInt();
+	return 0;
+}
+
+//打包注销消息
+int Protocol::PackLogout(const LogoutInfo &info, std::string &msg)
+{
+	rapidjson::StringBuffer buf;
+    rapidjson::Writer<rapidjson::StringBuffer> w(buf);
+
+    w.StartObject();
+    PackHeader(w, info.header);
+
+    w.Key("userid");
+    w.String(info.userId.data());
+
+	w.Key("termtype");
+	w.Int(info.termType);
+
+    //如果是响应报文，则仅设置响应字段
+    if(info.header.msgType == USER_LOGOUT_RESP)
+    {
+        PackHeaderResp(w, info.header);
+        w.EndObject();
+        msg = buf.GetString();
+        return 0;
+    }
+
+    w.EndObject();
+    msg = buf.GetString();
+	return 0;
+}
+
+//解析注销消息
+int Protocol::ParseLogout(LogoutInfo &info, const std::string &msg)
+{
+	rapidjson::Document doc;
+    if(doc.Parse(msg.data()).HasParseError())
+        return -1;
+
+    if(ParseHeader(doc, info.header) != 0)
+    {
+        fprintf(stderr, "Parse Header error from json string:\n");
+        fprintf(stderr, "%s\n", msg.data());
+        return -1;
+    }
+
+    if(!doc.HasMember("userid"))
+        return -1;
+    info.userId = doc["userid"].GetString();
 
     if(!doc.HasMember("termtype"))
         return -1;
