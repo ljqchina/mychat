@@ -59,7 +59,7 @@ namespace db
 			if(ret != SQLITE_OK)
 				return -1;
 
-			int col = 0;
+			int col = 1;
 			sqlite3_bind_text(stmt, col++, info.userId.c_str(), info.userId.length(), NULL);
 			sqlite3_bind_text(stmt, col++, info.nickName.c_str(), info.nickName.length(), NULL);
 			sqlite3_bind_text(stmt, col++, info.password.c_str(), info.password.length(), NULL);

@@ -13,6 +13,7 @@
 
 #include "Protocol.h"
 #include "msgtype.h"
+#include "errcode.h"
 
 using namespace std;
 
@@ -77,6 +78,11 @@ void user_register(int sock)
 	recv(sock, data, 1000, 0);
 
     fprintf(stderr, "%s response:%s\n", __func__, data);
+
+	msg = std::string(data);
+	pt.ParseRegister(ri, msg);
+	fprintf(stderr, "respcode:%d[%s]\n", ri.header.respCode, errstr(ri.header.respCode).data());
+
 	fprintf(stderr, "---------------------------------------\n\n");
 }
 

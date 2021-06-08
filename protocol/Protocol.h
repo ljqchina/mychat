@@ -13,7 +13,6 @@ typedef struct Header_
     int respCode;
     std::string msgId;
     std::string version;
-    std::string respText;
 }Header;
 
 typedef struct HeartInfo_
@@ -66,6 +65,9 @@ public:
 	//解析报文头
     int ParseHeader(const std::string &msg, Header &h);
     int ParseHeader(const rapidjson::Document &doc, Header &h);
+
+	//解析头部响应字段从json对象
+	int ParseHeaderResp(const rapidjson::Document &doc, Header &h);
 
 	//打包心跳包消息
 	int PackHeart(const HeartInfo &info, std::string &msg);

@@ -10,6 +10,7 @@ Protocol::~Protocol()
 {
 }
 
+//解析头部字段从json字符串
 int Protocol::ParseHeader(const std::string &msg, Header &h)
 {
     rapidjson::Document doc;
@@ -30,6 +31,7 @@ int Protocol::ParseHeader(const std::string &msg, Header &h)
     return 0;
 }
 
+//解析头部字段从json对象
 int Protocol::ParseHeader(const rapidjson::Document &doc, Header &h)
 {
     if(!doc.HasMember("msgtype") || !doc["msgtype"].IsInt())
@@ -43,6 +45,15 @@ int Protocol::ParseHeader(const rapidjson::Document &doc, Header &h)
     if(!doc.HasMember("version"))
         return -1;
     h.version = doc["version"].GetString();
+    return 0;
+}
+
+//解析头部响应字段从json对象
+int Protocol::ParseHeaderResp(const rapidjson::Document &doc, Header &h)
+{
+    if(!doc.HasMember("respcode") || !doc["respcode"].IsInt())
+        return -1;
+    h.respCode = doc["respcode"].GetInt();
     return 0;
 }
 
@@ -66,8 +77,6 @@ int Protocol::PackHeaderResp(rapidjson::Writer<rapidjson::StringBuffer> &w, cons
 {
     w.Key("respcode");
     w.Int(h.respCode);
-    w.Key("resptext");
-    w.String(h.respText.data());
    return 0; 
 }
 
@@ -175,6 +184,13 @@ int Protocol::ParseRegister(RegisterInfo &info, const std::string &msg)
         return -1;
     info.userId = doc["userid"].GetString();
 
+	//如果是响应报文，则需要解析响应字段
+    if(info.header.msgType == USER_REG_RESP)
+    {
+		ParseHeaderResp(doc, info.header);
+		return 0;
+	}
+
     if(!doc.HasMember("nickname"))
         return -1;
     info.nickName = doc["nickname"].GetString();
@@ -243,13 +259,19 @@ int Protocol::ParseLogin(LoginInfo &info, const std::string &msg)
         return -1;
     info.userId = doc["userid"].GetString();
 
-	if(!doc.HasMember("password"))
-        return -1;
-    info.password = doc["password"].GetString();
-
     if(!doc.HasMember("termtype"))
         return -1;
     info.termType = doc["termtype"].GetInt();
+
+	//如果是响应报文，则需要解析响应字段
+    if(info.header.msgType == USER_LOGIN_RESP)
+    {
+		ParseHeaderResp(doc, info.header);
+	}
+
+	if(!doc.HasMember("password"))
+        return -1;
+    info.password = doc["password"].GetString();
 	return 0;
 }
 
@@ -303,6 +325,12 @@ int Protocol::ParseLogout(LogoutInfo &info, const std::string &msg)
     if(!doc.HasMember("termtype"))
         return -1;
     info.termType = doc["termtype"].GetInt();
+
+	//如果是响应报文，则需要解析响应字段
+    if(info.header.msgType == USER_LOGOUT_RESP)
+    {
+		ParseHeaderResp(doc, info.header);
+	}
 	return 0;
 }
 

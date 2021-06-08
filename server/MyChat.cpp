@@ -130,8 +130,7 @@ int MyChat::ProHeart(struct bufferevent *bev, const std::string &msg)
 	//response
 	std::string str;
 	info.header.msgType = SYS_HEART_RESP;
-	info.header.respCode = 0;
-	info.header.respText = "success";
+	info.header.respCode = ERR_SUCCESS;
 	m_Protocol.PackHeart(info, str);
 	fprintf(stderr, "heart msg response:%s\n", str.data());
 	pConn->Send(str);
@@ -145,37 +144,45 @@ int MyChat::ProRegister(struct bufferevent *bev, const std::string &msg)
 	if(m_Protocol.ParseRegister(info, msg) != 0)
 		return -1;
 
-	//检查是否已经注册,如果已经注册提示已经注册
-	if(db::user::IsRegistered(info.userId))
-	{
-		fprintf(stderr, "user:%p, %s is already a register user\n", bev, info.userId.data());
-		//response msg here
-		return 0;
-	}
-
-	//未注册则进行注册,存储到数据库用户信息表
-	if(db::user::RegisterUser(info) != 0)
-	{
-		fprintf(stderr, "db::user::RegisterUser failed, userid:%s\n", info.userId.data());
-		return -1;
-	}
-
+	//生成一个连接对象,注册连接对象不保存,使用完后释放掉,登录时才保存
 	Conn *pConn = m_UserConn.FindUser(info.userId);
 	if(pConn != nullptr)
 	{
 		fprintf(stderr, "repeat register user:%p\n", bev);
 		return 0;
 	}
-
 	pConn = new Conn(info.userId, bev);
 	//m_UserConn.AddUser(pConn);	//注册连接不保存,登录时才保存
+
+	//检查是否已经注册,如果已经注册提示已经注册
+	if(db::user::IsRegistered(info.userId))
+	{
+		fprintf(stderr, "user:%p, %s is already a register user\n", bev, info.userId.data());
+		std::string str;
+		info.header.msgType = USER_REG_RESP;
+		info.header.respCode = ERR_USER_EXISTS;
+		m_Protocol.PackRegister(info, str);
+		pConn->Send(str);
+		delete pConn;
+		return 0;
+	}
+
+	//未注册则进行注册,存储到数据库用户信息表
+	info.type = 0;
+	info.status = 0;
+	if(db::user::RegisterUser(info) != 0)
+	{
+		fprintf(stderr, "db::user::RegisterUser failed, userid:%s\n", info.userId.data());
+		delete pConn;
+		return -1;
+	}
+
 	fprintf(stderr, "new register user:%p, userid:%s, nickname:%s\n", bev, info.userId.data(), info.nickName.data());
 
 	//response
 	std::string str;
 	info.header.msgType = USER_REG_RESP;
-	info.header.respCode = 0;
-	info.header.respText = "success";
+	info.header.respCode = ERR_SUCCESS;
 	m_Protocol.PackRegister(info, str);
 	fprintf(stderr, "register response:%s\n", str.data());
 	pConn->Send(str);
@@ -212,8 +219,7 @@ int MyChat::ProLogin(struct bufferevent *bev, const std::string &msg)
 	//response
 	std::string str;
 	info.header.msgType = USER_LOGIN_RESP;
-	info.header.respCode = 0;
-	info.header.respText = "success";
+	info.header.respCode = ERR_SUCCESS;
 	m_Protocol.PackLogin(info, str);
 	fprintf(stderr, "login response:%s\n", str.data());
 	pConn->Send(str);
@@ -240,8 +246,7 @@ int MyChat::ProLogout(struct bufferevent *bev, const std::string &msg)
 	//response
 	std::string str;
 	info.header.msgType = USER_LOGOUT_RESP;
-	info.header.respCode = 0;
-	info.header.respText = "success";
+	info.header.respCode = ERR_SUCCESS;
 	m_Protocol.PackLogout(info, str);
 	fprintf(stderr, "logout response:%s\n", str.data());
 	pConn->Send(str);
