@@ -70,7 +70,6 @@ static void OnClose(struct bufferevent *bev, void *arg)
     {
         fprintf(stderr, "user logout:%p\n", bev);
         pmc->m_UserConn.RemoveUser(pConn->m_UserId);
-        pConn->Close();
 		delete pConn;
     }
 }
@@ -197,23 +196,54 @@ int MyChat::ProLogin(struct bufferevent *bev, const std::string &msg)
 	if(m_Protocol.ParseLogin(info, msg) != 0)
 		return -1;
 
-	//检查是否已注册,非注册用户不能登录
-
-
-	//登录
+	//检查用户连接对象是否存在
+	//存在说明已经登录需要判断是否多个机器登录同一账户
 	Conn *pConn = m_UserConn.FindUser(info.userId);
 	if(pConn == nullptr)
 	{
 		pConn = new Conn(info.userId, bev);
-		m_UserConn.AddUser(pConn);
 		fprintf(stderr, "login user:%p\n", bev);
 	}
 	else
 	{
-		fprintf(stderr, "login already user:%p\n", bev);
 		//如果已经登录,需要判断bev是否相等,不相等则认为一个账户在多个终端登录,
 		//或者之前的连接状态异常(比如网络异常),需要将之前的连接断开清除掉
+		if(pConn->Bev() == bev)
+		{
+			//重复登录,应该不存在这个情况
+			fprintf(stderr, "repeat login user:%p\n", bev);
+			return 0;
+		}
+		else
+		{
+			fprintf(stderr, "login other machine, user:%p\n", bev);
 
+			//多个机器登录同一账户,通知先前登录的机器下线即客户端主动关闭连接
+			std::string str;
+			info.header.msgType = USER_LOGIN_RESP;
+			info.header.respCode = ERR_USER_LOGIN_OTHER;
+			m_Protocol.PackLogin(info, str);
+			pConn->Send(str);
+			//这里仅移除和释放用户连接对象Conn,Conn保存的bev在服务器收到关闭事件时再关闭
+			m_UserConn.RemoveUser(info.userId);
+			delete pConn;
+
+			//本次登录生成新的连接对象,现在不保存,登录成功后保存
+			pConn = new Conn(info.userId, bev); 
+		}
+	}
+
+	//检查是否已注册,非注册用户不能登录
+	if(!db::user::IsRegistered(info.userId))
+	{
+		fprintf(stderr, "user:%p, %s is not a register user\n", bev, info.userId.data());
+		std::string str;
+		info.header.msgType = USER_LOGIN_RESP;
+		info.header.respCode = ERR_USER_NOT_EXISTS;
+		m_Protocol.PackLogin(info, str);
+		pConn->Send(str);
+		delete pConn;
+		return 0;
 	}
 
 	//response
@@ -223,6 +253,7 @@ int MyChat::ProLogin(struct bufferevent *bev, const std::string &msg)
 	m_Protocol.PackLogin(info, str);
 	fprintf(stderr, "login response:%s\n", str.data());
 	pConn->Send(str);
+	m_UserConn.AddUser(pConn); //保存用户连接对象
 	return 0;
 }
 
@@ -240,7 +271,6 @@ int MyChat::ProLogout(struct bufferevent *bev, const std::string &msg)
 	else
 	{
 		fprintf(stderr, "do logout user:%p\n", bev);
-		m_UserConn.RemoveUser(info.userId);
 	}
 
 	//response
@@ -250,7 +280,9 @@ int MyChat::ProLogout(struct bufferevent *bev, const std::string &msg)
 	m_Protocol.PackLogout(info, str);
 	fprintf(stderr, "logout response:%s\n", str.data());
 	pConn->Send(str);
-	//pConn->Close(); //客户端发起关闭,或者心跳超时由服务器主动关闭
+	//这里仅移除和释放用户连接对象Conn,Conn保存的bev在服务器收到关闭事件时再关闭
+	m_UserConn.RemoveUser(info.userId);
+	delete pConn;
 	return 0;
 }
 

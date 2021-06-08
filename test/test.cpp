@@ -110,7 +110,17 @@ void user_login(int sock)
 	recv(sock, data, 1000, 0);
 
     fprintf(stderr, "%s response:%s\n", __func__, data);
+
+	msg = std::string(data);
+	pt.ParseLogin(info, msg);
+	fprintf(stderr, "respcode:%d[%s]\n", info.header.respCode, errstr(info.header.respCode).data());
+
 	fprintf(stderr, "---------------------------------------\n\n");
+	/*
+	memset(data, 0, sizeof(data));
+	recv(sock, data, 1000, 0);
+    fprintf(stderr, "%s response:%s\n", __func__, data);
+	*/
 }
 
 //注销消息
@@ -136,6 +146,11 @@ void user_logout(int sock)
 	recv(sock, data, 1000, 0);
 
     fprintf(stderr, "%s response:%s\n", __func__, data);
+
+	msg = std::string(data);
+	pt.ParseLogout(info, msg);
+	fprintf(stderr, "respcode:%d[%s]\n", info.header.respCode, errstr(info.header.respCode).data());
+
 	fprintf(stderr, "---------------------------------------\n\n");
 }
 

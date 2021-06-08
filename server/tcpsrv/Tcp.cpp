@@ -47,7 +47,8 @@ static void conn_eventcb(struct bufferevent *bev, short events, void *user_data)
 	/* None of the other events can happen here, since we haven't enabled
 	 * timeouts */
 	if (events != BEV_EVENT_CONNECTED) {
-		//bufferevent_free(bev); //free in Conn
+		fprintf(stderr, "free bev:%p\n", bev);
+		bufferevent_free(bev);
 		if (ts && ts->closecb)
 			ts->closecb(bev, ts->closecb_arg);
 	}

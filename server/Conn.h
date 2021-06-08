@@ -22,6 +22,7 @@ public:
     void Close();
     int Send(const std::string &buff);
     int Send(const char *buff, int buffLen);
+    struct bufferevent *Bev() { return m_pBev; };
 
 public:
     time_t m_LastTime;
