@@ -64,6 +64,15 @@ typedef struct OfflineInfo_
 	std::string datetime;
 }OfflineInfo;
 
+typedef struct AddFriendInfo_
+{
+	Header header;
+	int flag;
+	std::string userId;
+	std::string userId_to;
+	std::string content;
+}AddFriendInfo;
+
 class Protocol
 {
 public:
@@ -109,6 +118,11 @@ public:
 	int PackOfflineMsg(const std::vector<OfflineInfo> &v, const std::string &userId_to, std::string &msg);
 	//解析离线消息
 	int ParseOfflineMsg(std::vector<OfflineInfo> &v, const std::string &msg);
+
+	//打包添加好友消息
+	int PackAddFriend(const AddFriendInfo &info, std::string &msg);
+	//解析添加好友消息
+	int ParseAddFriend(AddFriendInfo &info, const std::string &msg);
 private:
 
 };

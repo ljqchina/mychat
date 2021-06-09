@@ -17,6 +17,7 @@ public:
 	int ProRegister(struct bufferevent *bev, const std::string &msg);
 	int ProLogin(struct bufferevent *bev, const std::string &msg);
 	int ProLogout(struct bufferevent *bev, const std::string &msg);
+	int ProAddFriend(struct bufferevent *bev, const std::string &msg);
 
 public:
 	struct event_base *m_pBase;

@@ -430,3 +430,68 @@ int Protocol::ParseOfflineMsg(std::vector<OfflineInfo> &v, const std::string &ms
 	return 0;
 }
 
+//打包添加好友消息,服务器收到后直接转发
+int Protocol::PackAddFriend(const AddFriendInfo &info, std::string &msg)
+{
+	rapidjson::StringBuffer buf;
+    rapidjson::Writer<rapidjson::StringBuffer> w(buf);
+
+    w.StartObject();
+    PackHeader(w, info.header);
+
+    w.Key("userid");
+    w.String(info.userId.data());
+
+    w.Key("userid_to");
+    w.String(info.userId_to.data());
+
+	if(info.header.msgType == USER_ADDFRIEND_RESP)
+	{
+		w.Key("flag");
+		w.Int(info.flag);
+		w.EndObject();
+		msg = buf.GetString();
+		PackLength(msg);
+		return 0;
+	}
+
+    w.Key("content");
+    w.String(info.content.data());
+
+	w.EndObject();
+	msg = buf.GetString();
+	PackLength(msg);
+	return 0;
+}
+
+//解析添加好友消息,服务器收到后直接转发
+int Protocol::ParseAddFriend(AddFriendInfo &info, const std::string &msg)
+{
+	rapidjson::Document doc;
+    if(doc.Parse(msg.data()).HasParseError())
+        return -1;
+
+    if(ParseHeader(doc, info.header) != 0)
+    {
+        fprintf(stderr, "Parse Header error from json string:\n");
+        fprintf(stderr, "%s\n", msg.data());
+        return -1;
+    }
+
+    if(!doc.HasMember("userid"))
+        return -1;
+    info.userId = doc["userid"].GetString();
+
+    if(!doc.HasMember("userid_to"))
+        return -1;
+    info.userId_to = doc["userid_to"].GetString();
+
+	if(info.header.msgType == USER_ADDFRIEND_RESP)
+	{
+		if(!doc.HasMember("flag"))
+			return -1;
+		info.flag = doc["flag"].GetInt();
+	}
+	return 0;
+}
+

@@ -69,6 +69,13 @@ static void OnRead(struct bufferevent *bev, void *arg)
 				pmc->ProHeart(bev, msg);
 				break;
 			}
+			//添加好友请求和好友响应
+			case USER_ADDFRIEND_REQ:
+			case USER_ADDFRIEND_RESP:
+			{
+				pmc->ProAddFriend(bev, msg);
+				break;
+			}
 			default:
 				fprintf(stderr, "msgType error:%d\n", h.msgType);
 				break;
@@ -298,6 +305,7 @@ int MyChat::ProLogin(struct bufferevent *bev, const std::string &msg)
 	return 0;
 }
 
+//处理注销消息
 int MyChat::ProLogout(struct bufferevent *bev, const std::string &msg)
 {
 	LogoutInfo info; 
@@ -324,6 +332,35 @@ int MyChat::ProLogout(struct bufferevent *bev, const std::string &msg)
 	//这里仅移除和释放用户连接对象Conn,Conn保存的bev在服务器收到关闭事件时再关闭
 	m_UserConn.RemoveUser(info.userId);
 	delete pConn;
+	return 0;
+}
+
+//处理添加好友请求和好友响应消息
+int MyChat::ProAddFriend(struct bufferevent *bev, const std::string &msg)
+{
+	AddFriendInfo info; 
+	if(m_Protocol.ParseAddFriend(info, msg) != 0)
+		return -1;
+
+	Conn *pConn = m_UserConn.FindUser(info.userId_to);
+	if(pConn == nullptr)
+	{
+		//目的用户未登录,需要将好友请求或者好友响应保存到离线消息表
+		fprintf(stderr, "addfriend user not login, save offline msg:%s\n", info.userId_to.data());
+		OfflineInfo oi;
+		oi.userId = info.userId;
+		oi.userId_to = info.userId_to;
+		oi.content = info.content;
+		oi.type = info.header.msgType;
+		oi.datetime = "";
+		return 0;
+	}
+	else
+	{
+		//找到目的用户,直接转发好友请求或者好友响应到目的用户
+		fprintf(stderr, "send add friend request/result to user:%s\n", info.userId_to.data());
+		pConn->Send(msg);
+	}
 	return 0;
 }
 

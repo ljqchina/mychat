@@ -164,7 +164,45 @@ void user_logout(int sock)
 	fprintf(stderr, "---------------------------------------\n\n");
 }
 
+//添加好友请求或者响应消息
+void user_addfriend(int sock)
+{
+    string msg;
+    Protocol pt;
+    AddFriendInfo info;
 
+    info.header.version = "1.0.0.0";
+    //info.header.msgType = USER_ADDFRIEND_REQ;
+    info.header.msgType = USER_ADDFRIEND_RESP;
+    info.userId = "13000000001";
+    info.userId_to = "13000000001";
+    info.flag = 1; //响应时设置
+    //info.content = "添加好友"; //请求时设置
+
+    pt.PackAddFriend(info, msg);
+    send(sock, msg.data(), msg.size(), 0);
+
+    fprintf(stderr, "%s request:%s\n\n", __func__, msg.data());
+
+	//receive response msg
+	char data[1024];
+	memset(data, 0, sizeof(data));
+	recv(sock, data, 4, 0);
+	int len = atoi(data);
+	memset(data, 0, sizeof(data));
+	recv(sock, data, len, 0);
+
+    fprintf(stderr, "%s response:%s\n", __func__, data);
+
+	msg = std::string(data);
+	pt.ParseAddFriend(info, msg);
+	if(info.header.msgType == USER_ADDFRIEND_REQ)
+		fprintf(stderr, "recved add friend request:%d\n", info.header.msgType);
+	if(info.header.msgType == USER_ADDFRIEND_RESP)
+		fprintf(stderr, "recved add friend result:%d[%d]\n", info.header.msgType, info.flag);
+
+	fprintf(stderr, "---------------------------------------\n\n");
+}
 
 int main(int argc, char **argv)
 {
@@ -202,10 +240,13 @@ int main(int argc, char **argv)
 
 	//2. 用户登录
     user_login(sock);
-	//sleep(3);
+	sleep(3);
 
 	//3. 用户注销
     //user_logout(sock);
+
+	//4. 添加好友请求
+	user_addfriend(sock);
 
 	close(sock);
 	printf("end\n");
