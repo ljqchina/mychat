@@ -342,6 +342,11 @@ int MyChat::ProAddFriend(struct bufferevent *bev, const std::string &msg)
 	if(m_Protocol.ParseAddFriend(info, msg) != 0)
 		return -1;
 
+	//如果是好友响应消息,则判断同意/拒绝,如果同意则建立好友关系到好友数据表friend
+	if(info.header.msgType == USER_ADDFRIEND_RESP && info.flag == OPERATE_FRIEND_AGREE)
+	{
+	}
+
 	Conn *pConn = m_UserConn.FindUser(info.userId_to);
 	if(pConn == nullptr)
 	{
@@ -350,9 +355,11 @@ int MyChat::ProAddFriend(struct bufferevent *bev, const std::string &msg)
 		OfflineInfo oi;
 		oi.userId = info.userId;
 		oi.userId_to = info.userId_to;
-		oi.content = info.content;
+		oi.content = info.content; //虽然赋值了,只有好友请求消息才会打包该字段,响应消息不打包该字段
 		oi.type = info.header.msgType;
 		oi.datetime = "";
+		//保存离线消息
+	
 		return 0;
 	}
 	else

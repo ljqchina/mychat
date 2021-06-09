@@ -3,6 +3,13 @@
 
 #define MYCHAT_VERSION			"1.0.0.0"
 
+enum
+{
+	OPERATE_FRIEND_AGREE = 1,
+	OPERATE_FRIEND_DOTAGREE = 2
+};
+
+
 #define SYS_NOTIFY_REQ			1001
 #define SYS_NOTIFY_RESP			1002
 #define SYS_HEART_REQ			1005
