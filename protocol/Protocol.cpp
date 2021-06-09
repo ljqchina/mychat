@@ -10,6 +10,14 @@ Protocol::~Protocol()
 {
 }
 
+//打包增加长度信息
+void Protocol::PackLength(std::string &msg)
+{
+	char s[10];
+	sprintf(s, "%04ld", msg.size());
+	msg.insert(0, s); 
+}
+
 //解析头部字段从json字符串
 int Protocol::ParseHeader(const std::string &msg, Header &h)
 {
@@ -99,11 +107,13 @@ int Protocol::PackHeart(const HeartInfo &info, std::string &msg)
         PackHeaderResp(w, info.header);
         w.EndObject();
         msg = buf.GetString();
+		PackLength(msg);
         return 0;
     }
 
 	w.EndObject();
 	msg = buf.GetString();
+	PackLength(msg);
 	return 0;
 }
 
@@ -146,6 +156,7 @@ int Protocol::PackRegister(const RegisterInfo &info, std::string &msg)
         PackHeaderResp(w, info.header);
         w.EndObject();
         msg = buf.GetString();
+		PackLength(msg);
         return 0;
     }
 
@@ -163,6 +174,7 @@ int Protocol::PackRegister(const RegisterInfo &info, std::string &msg)
 
     w.EndObject();
     msg = buf.GetString();
+	PackLength(msg);
     return 0;
 }
 
@@ -230,6 +242,7 @@ int Protocol::PackLogin(const LoginInfo &info, std::string &msg)
         PackHeaderResp(w, info.header);
         w.EndObject();
         msg = buf.GetString();
+		PackLength(msg);
         return 0;
     }
 
@@ -238,6 +251,7 @@ int Protocol::PackLogin(const LoginInfo &info, std::string &msg)
 
     w.EndObject();
     msg = buf.GetString();
+	PackLength(msg);
 	return 0;
 }
 
@@ -296,11 +310,13 @@ int Protocol::PackLogout(const LogoutInfo &info, std::string &msg)
         PackHeaderResp(w, info.header);
         w.EndObject();
         msg = buf.GetString();
+		PackLength(msg);
         return 0;
     }
 
     w.EndObject();
     msg = buf.GetString();
+	PackLength(msg);
 	return 0;
 }
 
@@ -374,6 +390,7 @@ int Protocol::PackOfflineMsg(const std::vector<OfflineInfo> &v, const std::strin
 
     w.EndObject();
     msg = buf.GetString();
+	PackLength(msg);
 	return 0;
 }
 

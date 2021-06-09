@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#define PACKAGE_HEADER_LEN 4
+
 typedef struct Header_
 {
     int msgType;
@@ -70,6 +72,9 @@ public:
     ~Protocol();
 
 public:
+	//打包增加长度信息
+	void PackLength(std::string &msg);
+
 	//打包报文头
     int PackHeader(rapidjson::Writer<rapidjson::StringBuffer> &w, const Header &h);
 	//响应报文增加响应字段

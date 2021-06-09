@@ -106,9 +106,12 @@ void user_login(int sock)
     fprintf(stderr, "%s request:%s\n\n", __func__, msg.data());
 
 	//receive response msg
-	char data[1024];
+	char data[4096];
 	memset(data, 0, sizeof(data));
-	recv(sock, data, 1000, 0);
+	recv(sock, data, 4, 0);
+	int len = atoi(data);
+	memset(data, 0, sizeof(data));
+	recv(sock, data, len, 0);
 
     fprintf(stderr, "%s response:%s\n", __func__, data);
 
@@ -118,9 +121,11 @@ void user_login(int sock)
 
 	fprintf(stderr, "---------------------------------------\n\n");
 
+	/*
 	memset(data, 0, sizeof(data));
 	recv(sock, data, 1000, 0);
     fprintf(stderr, "%s response:%s\n", __func__, data);
+	*/
 }
 
 //注销消息

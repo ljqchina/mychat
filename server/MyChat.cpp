@@ -15,49 +15,65 @@ static void timeout_cb(evutil_socket_t fd, short event, void *arg)
 static void OnRead(struct bufferevent *bev, void *arg)
 {
 	MyChat *pmc = static_cast<MyChat *>(arg);
-	char data[1024];
-	memset(data, 0, sizeof(data));
-	bufferevent_read(bev, data, 1000);
-	fprintf(stderr, "%s:[%s]\n", __func__, data);
-	fprintf(stderr, "--------------------------\n");
-
-    std::string msg(data);
-
-    //解析消息类型
-    Header h;
-    pmc->m_Protocol.ParseHeader(msg, h);
-    fprintf(stderr, "msgType:%d, version:%s\n", h.msgType, h.version.data());
-
-    switch(h.msgType)
-    {
-        //注册
-        case USER_REG_REQ:
-        {
-			pmc->ProRegister(bev, msg);	
-            break;
-        }
-        //登录
-        case USER_LOGIN_REQ:
-        {
-			pmc->ProLogin(bev, msg);
-	        break;
-        }
-		//注销
-		case USER_LOGOUT_REQ:
+	char data[4096];
+	while(1)
+	{
+		memset(data, 0, sizeof(data));
+		bufferevent_read(bev, data, PACKAGE_HEADER_LEN);
+		int len = atoi(data);
+		if(len >= 4096)
 		{
-			pmc->ProLogout(bev, msg);
-			break;
+			fprintf(stderr, "%s, Package Length error:%d\n", __func__, len);
+			return;
 		}
-		//心跳
-		case SYS_HEART_REQ:
+		if(len <= 0)
 		{
-			pmc->ProHeart(bev, msg);
-			break;
+			fprintf(stderr, "%s, No more Package data to receive:%d\n", __func__, len);
+			return;
 		}
-        default:
-            fprintf(stderr, "msgType error:%d\n", h.msgType);
-            break;
-    }
+		memset(data, 0, sizeof(data));
+		bufferevent_read(bev, data, len);
+		fprintf(stderr, "%s:[%d][%s]\n", __func__, len, data);
+		fprintf(stderr, "--------------------------\n");
+
+		std::string msg(data);
+
+		//解析消息类型
+		Header h;
+		pmc->m_Protocol.ParseHeader(msg, h);
+		fprintf(stderr, "msgType:%d, version:%s\n", h.msgType, h.version.data());
+
+		switch(h.msgType)
+		{
+			//注册
+			case USER_REG_REQ:
+			{
+				pmc->ProRegister(bev, msg);	
+				break;
+			}
+			//登录
+			case USER_LOGIN_REQ:
+			{
+				pmc->ProLogin(bev, msg);
+				break;
+			}
+			//注销
+			case USER_LOGOUT_REQ:
+			{
+				pmc->ProLogout(bev, msg);
+				break;
+			}
+			//心跳
+			case SYS_HEART_REQ:
+			{
+				pmc->ProHeart(bev, msg);
+				break;
+			}
+			default:
+				fprintf(stderr, "msgType error:%d\n", h.msgType);
+				break;
+		}
+	}
 }
 
 static void OnClose(struct bufferevent *bev, void *arg)
