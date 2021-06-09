@@ -1,6 +1,10 @@
 #ifndef MSGTYPE_H_
 #define MSGTYPE_H_
 
+#define MYCHAT_VERSION	"1.0.0.0"
+
+#define SYS_NOTIFY_REQ		1001
+#define SYS_NOTIFY_RESP		1002
 #define SYS_HEART_REQ		1005
 #define SYS_HEART_RESP		1006
 
@@ -10,6 +14,9 @@
 #define USER_LOGIN_RESP		2004
 #define USER_LOGOUT_REQ		2005
 #define USER_LOGOUT_RESP	2006
+#define USER_CHAT_REQ		2007
+#define USER_CHAT_RESP		2008
+#define USER_OFFLINEMSG		2009
 
 #endif
 

@@ -263,11 +263,22 @@ int MyChat::ProLogin(struct bufferevent *bev, const std::string &msg)
 		return 0;
 	}
 
+	//发送登录成功消息
 	info.header.respCode = ERR_SUCCESS;
 	m_Protocol.PackLogin(info, str);
 	fprintf(stderr, "login response:%s\n", str.data());
 	pConn->Send(str);
 	m_UserConn.AddUser(pConn); //保存用户连接对象
+
+	//查询该用户的离线消息并发送
+	std::vector<OfflineInfo> vec;
+	db::user::QueryOfflineMsg(info.userId, vec);
+	if(vec.size() == 0)
+		return 0;
+	m_Protocol.PackOfflineMsg(vec, info.userId, str);
+	pConn->Send(str);
+	fprintf(stderr, "Send OfflineMsg:%s\n", str.data());
+
 	return 0;
 }
 

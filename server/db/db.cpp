@@ -101,22 +101,37 @@ namespace db
 			sqlite3_finalize(stmt);
 			return count ? true : false;
 		}
+
+		int QueryOfflineMsg(const std::string &userId, std::vector<OfflineInfo> &v)
+		{
+			std::string sql;
+			const char *zTail;
+			sqlite3_stmt *stmt = NULL; 
+
+			sql = "select msgtype, msg, datetime from offlinemsg where userid_to='" + userId + "'";
+			int ret = sqlite3_prepare_v2(_db, sql.c_str(), -1, &stmt, &zTail);
+			if(ret != SQLITE_OK)
+			{
+				printf("%s error:%d\n", __func__, ret);
+				return -1;
+			}
+			
+			while(sqlite3_step(stmt) == SQLITE_ROW)
+			{
+				int col = 0;
+				const unsigned char *p;
+				OfflineInfo oi;
+				oi.userId = userId;
+			   	oi.type = sqlite3_column_int(stmt, col++);
+			   	p = sqlite3_column_text(stmt, col++);
+				oi.msg = (char *)p;
+			   	p = sqlite3_column_text(stmt, col++);
+				oi.datetime = (char *)p;
+				v.push_back(std::move(oi));
+			}
+			sqlite3_finalize(stmt);
+			return 0;
+		}
 	};
 };
-
-/*
-int main()
-{
-	const char *dbfile = "./mychat.db";
-	int ret = db::open(dbfile);
-	printf("db::open ret:%d\n", ret);
-
-	string userId("123456");
-	printf("db::IsRegistered:%d\n", db::user::IsRegistered(userId));
-
-	ret = db::close();
-	printf("db::close ret:%d\n", ret);
-	return 0;
-}
-*/
 

@@ -97,7 +97,7 @@ void user_login(int sock)
     info.header.version = "1.0.0.0";
     info.header.msgType = USER_LOGIN_REQ;
     info.userId = "13000000001";
-    info.password = "1234";
+    info.password = "123";
     info.termType = 1;
 
     pt.PackLogin(info, msg);
@@ -117,11 +117,10 @@ void user_login(int sock)
 	fprintf(stderr, "respcode:%d[%s]\n", info.header.respCode, errstr(info.header.respCode).data());
 
 	fprintf(stderr, "---------------------------------------\n\n");
-	/*
+
 	memset(data, 0, sizeof(data));
 	recv(sock, data, 1000, 0);
     fprintf(stderr, "%s response:%s\n", __func__, data);
-	*/
 }
 
 //注销消息

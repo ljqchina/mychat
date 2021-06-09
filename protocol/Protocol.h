@@ -6,6 +6,7 @@
 #include "document.h"
 
 #include <string>
+#include <vector>
 
 typedef struct Header_
 {
@@ -51,6 +52,17 @@ typedef struct LogoutInfo_
     std::string userId;
 }LogoutInfo;
 
+typedef struct OfflineInfo_
+{
+	Header header;
+	int type;
+	int status;
+	std::string userId;
+	std::string userId_to;
+	std::string msg;
+	std::string datetime;
+}OfflineInfo;
+
 class Protocol
 {
 public:
@@ -88,6 +100,11 @@ public:
     int PackLogout(const LogoutInfo &info, std::string &msg);
 	//解析注销报文
     int ParseLogout(LogoutInfo &info, const std::string &msg);
+
+	//打包离线消息
+	int PackOfflineMsg(const std::vector<OfflineInfo> &v, const std::string &userId_to, std::string &msg);
+	//解析离线消息
+	int ParseOfflineMsg(std::vector<OfflineInfo> &v, const std::string &msg);
 private:
 
 };

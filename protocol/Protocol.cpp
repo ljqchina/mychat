@@ -334,3 +334,52 @@ int Protocol::ParseLogout(LogoutInfo &info, const std::string &msg)
 	return 0;
 }
 
+//打包离线消息
+int Protocol::PackOfflineMsg(const std::vector<OfflineInfo> &v, const std::string &userId_to, std::string &msg)
+{
+	rapidjson::StringBuffer buf;
+    rapidjson::Writer<rapidjson::StringBuffer> w(buf);
+
+	Header h;
+	h.msgType = USER_OFFLINEMSG;
+	h.version = MYCHAT_VERSION;
+	h.msgId = "";
+
+	//设置报文头部
+    w.StartObject();
+    PackHeader(w, h);
+	
+	//设置目的用户id
+	w.Key("userid_to");
+	w.String(userId_to.data());
+	
+	//设置离线消息数组,系统通知消息与用户离线消息都可发送
+	w.Key("msgs");
+	w.StartArray();
+	for(auto a : v)
+	{
+		w.Key("userid");
+		w.String(a.userId.data());
+
+		w.Key("content");
+		w.String(a.msg.data());
+
+		w.Key("datetime");
+		w.String(a.datetime.data());
+
+		w.Key("type");
+		w.Int(a.type);
+	}
+	w.EndArray();
+
+    w.EndObject();
+    msg = buf.GetString();
+	return 0;
+}
+
+//解析离线消息
+int Protocol::ParseOfflineMsg(std::vector<OfflineInfo> &v, const std::string &msg)
+{
+	return 0;
+}
+

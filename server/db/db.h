@@ -4,6 +4,7 @@
 //#include <sqlite3.h>
 #include <sqlcipher/sqlite3.h>
 #include <string>
+#include <vector>
 #include "Protocol.h"
 
 namespace db
@@ -17,6 +18,7 @@ namespace db
 		bool IsRegistered(const std::string &userId);
 		int RegisterUser(const RegisterInfo &info);
 		bool CheckPassword(const LoginInfo &pwd);
+		int QueryOfflineMsg(const std::string &userId, std::vector<OfflineInfo> &v);
 	};
 };
 
