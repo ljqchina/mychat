@@ -3,10 +3,7 @@
 #include "errcode.h"
 
 Protocol::Protocol()
-{
-}
-
-Protocol::~Protocol()
+{ } Protocol::~Protocol()
 {
 }
 
@@ -374,17 +371,19 @@ int Protocol::PackOfflineMsg(const std::vector<OfflineInfo> &v, const std::strin
 	w.StartArray();
 	for(auto a : v)
 	{
+		w.StartObject();
 		w.Key("userid");
 		w.String(a.userId.data());
 
 		w.Key("content");
-		w.String(a.msg.data());
+		w.String(a.content.data());
 
 		w.Key("datetime");
 		w.String(a.datetime.data());
 
 		w.Key("type");
 		w.Int(a.type);
+		w.EndObject();
 	}
 	w.EndArray();
 
@@ -397,6 +396,37 @@ int Protocol::PackOfflineMsg(const std::vector<OfflineInfo> &v, const std::strin
 //解析离线消息
 int Protocol::ParseOfflineMsg(std::vector<OfflineInfo> &v, const std::string &msg)
 {
+	rapidjson::Document doc;
+    if(doc.Parse(msg.data()).HasParseError())
+        return -1;
+
+	Header h;
+	if(ParseHeader(doc, h) != 0)
+    {
+        fprintf(stderr, "%s Parse Header error from json string:\n", __func__);
+        fprintf(stderr, "%s\n", msg.data());
+        return -1;
+    }
+	
+    if(!doc.HasMember("userid_to"))
+        return -1;
+	std::string userId_to = doc["userid_to"].GetString();
+
+    if(!doc.HasMember("msgs") || !doc["msgs"].IsArray())
+		return -1;
+
+	const rapidjson::Value& array = doc["msgs"];
+	size_t len = array.Size();
+	for(size_t i = 0; i < len; i++)
+	{
+		OfflineInfo oi;
+		const rapidjson::Value& msgObj = array[i];
+		oi.userId = msgObj["userid"].GetString();
+		oi.content = msgObj["content"].GetString();
+		oi.datetime = msgObj["datetime"].GetString();
+		oi.type = msgObj["type"].GetInt();
+		v.push_back(oi);
+	}
 	return 0;
 }
 

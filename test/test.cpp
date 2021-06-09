@@ -121,11 +121,16 @@ void user_login(int sock)
 
 	fprintf(stderr, "---------------------------------------\n\n");
 
-	/*
 	memset(data, 0, sizeof(data));
-	recv(sock, data, 1000, 0);
-    fprintf(stderr, "%s response:%s\n", __func__, data);
-	*/
+	recv(sock, data, 4, 0);
+	len = atoi(data);
+	memset(data, 0, sizeof(data));
+	recv(sock, data, len, 0);
+    fprintf(stderr, "%s response:%d[%s]\n", __func__, len, data);
+	msg = std::string(data);
+	std::vector<OfflineInfo> vec;
+	pt.ParseOfflineMsg(vec, msg);
+    fprintf(stderr, "%s offlinemsg size:%d\n", __func__, vec.size());
 }
 
 //注销消息

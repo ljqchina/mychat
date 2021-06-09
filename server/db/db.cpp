@@ -124,7 +124,7 @@ namespace db
 				oi.userId = userId;
 			   	oi.type = sqlite3_column_int(stmt, col++);
 			   	p = sqlite3_column_text(stmt, col++);
-				oi.msg = (char *)p;
+				oi.content = (char *)p;
 			   	p = sqlite3_column_text(stmt, col++);
 				oi.datetime = (char *)p;
 				v.push_back(std::move(oi));

@@ -56,12 +56,11 @@ typedef struct LogoutInfo_
 
 typedef struct OfflineInfo_
 {
-	Header header;
 	int type;
 	int status;
 	std::string userId;
 	std::string userId_to;
-	std::string msg;
+	std::string content;
 	std::string datetime;
 }OfflineInfo;
 
