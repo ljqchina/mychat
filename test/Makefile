@@ -16,9 +16,9 @@ VPATH=$(SRC_PATH)
 
 BIN := test
 
-INCLUDE := -I. -I ../rapidjson -I ../protocol -I ../include
+INCLUDE := -I. -I../rapidjson -I../protocol -I../include -I../util
 LINKFLAGS := -Wl,-rpath=. -Wl,-rpath=../lib
-LIBS := -L. -L ../lib -lprotocol
+LIBS := -L. -L ../lib -lprotocol -lutil
 
 all : $(BIN)
 

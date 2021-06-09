@@ -76,6 +76,31 @@ namespace db
 			sqlite3_finalize(stmt);
 			return 0;
 		}
+
+		bool CheckPassword(const LoginInfo &info)
+		{
+			std::string sql;
+			const char *zTail;
+			sqlite3_stmt *stmt = NULL; 
+
+			sql = "select count(*) from userinfo where userid='" + info.userId + "'";
+			sql += " and password='" + info.password + "'";
+			int ret = sqlite3_prepare_v2(_db, sql.c_str(), -1, &stmt, &zTail);
+			if(ret != SQLITE_OK)
+			{
+				printf("%s error:%d\n", __func__, ret);
+				return false;
+			}
+			
+			int col = 0;
+			int count = 0;
+			if(sqlite3_step(stmt) == SQLITE_ROW)
+			{
+				count = sqlite3_column_int(stmt, col);
+			}
+			sqlite3_finalize(stmt);
+			return count ? true : false;
+		}
 	};
 };
 

@@ -22,9 +22,9 @@ VPATH=$(SRC_PATH)
 
 BIN := mychat
 
-INCLUDE := -I. -I ./tcpsrv -I ../include -I ../rapidjson -I ../protocol -I ./db
+INCLUDE := -I. -I./tcpsrv -I../include -I../rapidjson -I../protocol -I./db -I../util
 LINKFLAGS := -Wl,-rpath=. -Wl,-rpath=../lib
-LIBS := -L. -L ../lib -levent -lprotocol -ldb
+LIBS := -L. -L ../lib -levent -lprotocol -ldb -lutil
 
 all : build_prepare $(BIN)
 

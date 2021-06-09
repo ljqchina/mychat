@@ -3,6 +3,7 @@
 #include "msgtype.h"
 #include "errcode.h"
 #include "db.h"
+#include "util.h"
 
 using namespace std;
 
@@ -246,9 +247,22 @@ int MyChat::ProLogin(struct bufferevent *bev, const std::string &msg)
 		return 0;
 	}
 
-	//response
+	//response setting
 	std::string str;
 	info.header.msgType = USER_LOGIN_RESP;
+
+	//验证用户密码
+	info.password = util::md5(info.password);
+	fprintf(stderr, "password:%s\n", info.password.data());
+	if(!db::user::CheckPassword(info))
+	{
+		info.header.respCode = ERR_USER_ACOUNT_PASS;
+		m_Protocol.PackLogin(info, str);
+		pConn->Send(str);
+		fprintf(stderr, "login password error, response:%s\n", str.data());
+		return 0;
+	}
+
 	info.header.respCode = ERR_SUCCESS;
 	m_Protocol.PackLogin(info, str);
 	fprintf(stderr, "login response:%s\n", str.data());

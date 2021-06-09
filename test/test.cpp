@@ -14,6 +14,7 @@
 #include "Protocol.h"
 #include "msgtype.h"
 #include "errcode.h"
+#include "util.h"
 
 using namespace std;
 
@@ -63,7 +64,7 @@ void user_register(int sock)
     ri.header.msgType = USER_REG_REQ;
     ri.userId = "13000000001";
     ri.nickName = "abc";
-    ri.password = "123";
+    ri.password = util::md5("123");
     ri.sex = 1;
     ri.age = 20;
 
@@ -96,7 +97,7 @@ void user_login(int sock)
     info.header.version = "1.0.0.0";
     info.header.msgType = USER_LOGIN_REQ;
     info.userId = "13000000001";
-    info.password = "123";
+    info.password = "1234";
     info.termType = 1;
 
     pt.PackLogin(info, msg);
@@ -187,11 +188,11 @@ int main(int argc, char **argv)
 	}
 
     //1. 用户注册
-    user_register(sock);
+    //user_register(sock);
 	//sleep(3);
 
 	//2. 用户登录
-    //user_login(sock);
+    user_login(sock);
 	//sleep(3);
 
 	//3. 用户注销

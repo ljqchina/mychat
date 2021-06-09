@@ -16,6 +16,7 @@ namespace db
 	{
 		bool IsRegistered(const std::string &userId);
 		int RegisterUser(const RegisterInfo &info);
+		bool CheckPassword(const LoginInfo &pwd);
 	};
 };
 
