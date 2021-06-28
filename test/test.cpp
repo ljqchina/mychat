@@ -62,7 +62,7 @@ void user_register(int sock)
 
     ri.header.version = "1.0.0.0";
     ri.header.msgType = USER_REG_REQ;
-    ri.userId = "13000000001";
+    ri.userId = "13000000002";
     ri.nickName = "abc";
     ri.password = util::md5("123");
     ri.sex = 1;
@@ -121,6 +121,7 @@ void user_login(int sock)
 
 	fprintf(stderr, "---------------------------------------\n\n");
 
+	/*
 	memset(data, 0, sizeof(data));
 	recv(sock, data, 4, 0);
 	len = atoi(data);
@@ -131,6 +132,7 @@ void user_login(int sock)
 	std::vector<OfflineInfo> vec;
 	pt.ParseOfflineMsg(vec, msg);
     fprintf(stderr, "%s offlinemsg size:%d\n", __func__, vec.size());
+	*/
 }
 
 //注销消息
@@ -174,9 +176,9 @@ void user_addfriend(int sock)
     info.header.version = "1.0.0.0";
     //info.header.msgType = USER_ADDFRIEND_REQ;
     info.header.msgType = USER_ADDFRIEND_RESP;
-    info.userId = "13000000001";
+    info.userId = "13000000002";
     info.userId_to = "13000000001";
-    info.flag = 1; //响应时设置
+	info.flag = 1; //响应时设置
     //info.content = "添加好友"; //请求时设置
 
     pt.PackAddFriend(info, msg);
@@ -199,8 +201,7 @@ void user_addfriend(int sock)
 	if(info.header.msgType == USER_ADDFRIEND_REQ)
 		fprintf(stderr, "recved add friend request:%d\n", info.header.msgType);
 	if(info.header.msgType == USER_ADDFRIEND_RESP)
-		fprintf(stderr, "recved add friend result:%d[%d]\n", info.header.msgType, info.flag);
-
+		fprintf(stderr, "recved add friend result:%d[%d]\n", info.header.msgType, info.flag); 
 	fprintf(stderr, "---------------------------------------\n\n");
 }
 
@@ -246,7 +247,7 @@ int main(int argc, char **argv)
     //user_logout(sock);
 
 	//4. 添加好友请求
-	user_addfriend(sock);
+	//user_addfriend(sock);
 
 	close(sock);
 	printf("end\n");

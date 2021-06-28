@@ -157,6 +157,19 @@ namespace db
 			return 0;
 		}
 
+		int RemoveOfflineMsg(const std::string &userId)
+		{
+			int ret = 0;
+			char *zErrMsg = NULL;
+			std::string sql;
+			sql = "delete from offlinemsg where userid='" + userId + "'";
+			ret = sqlite3_exec(_db, sql.data(), 0, 0, &zErrMsg);
+			if(ret == SQLITE_OK)
+				return 0;
+			else
+				return -1;
+		}
+
 		int MakeFriend(const std::string &userId, const std::string &friendId)
 		{
 			int ret = 0;
@@ -176,6 +189,29 @@ namespace db
 			sqlite3_finalize(stmt);
 			return 0;
 
+		}
+
+		bool IsFriend(const std::string &userId, const std::string &friendId)
+		{
+			std::string sql;
+			const char *zTail;
+			sqlite3_stmt *stmt = NULL; 
+			sql = "select count(*) from friend where userid='" + userId + "' and friend='" + friendId + "'";
+			int ret = sqlite3_prepare_v2(_db, sql.c_str(), -1, &stmt, &zTail);
+			if(ret != SQLITE_OK)
+			{
+				printf("%s error:%d\n", __func__, ret);
+				return false;
+			}
+			
+			int col = 0;
+			int count = 0;
+			if(sqlite3_step(stmt) == SQLITE_ROW)
+			{
+				count = sqlite3_column_int(stmt, col);
+			}
+			sqlite3_finalize(stmt);
+			return count ? true : false;
 		}
 	};
 };

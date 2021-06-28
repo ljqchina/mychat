@@ -20,7 +20,9 @@ namespace db
 		bool CheckPassword(const LoginInfo &pwd);
 		int QueryOfflineMsg(const std::string &userId, std::vector<OfflineInfo> &v);
 		int SaveOfflineMsg(const OfflineInfo &info);
+		int RemoveOfflineMsg(const std::string &userId);
 		int MakeFriend(const std::string &userId, const std::string &friendId);
+		bool IsFriend(const std::string &userId, const std::string &friendId);
 	};
 };
 

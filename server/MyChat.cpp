@@ -296,6 +296,7 @@ int MyChat::ProLogin(struct bufferevent *bev, const std::string &msg)
 	db::user::QueryOfflineMsg(info.userId, vec);
 	if(vec.size() == 0)
 		return 0;
+	db::user::RemoveOfflineMsg(info.userId);
 	for(auto &v : vec)
 	{
 		str = v.content;
@@ -348,11 +349,13 @@ int MyChat::ProAddFriend(struct bufferevent *bev, const std::string &msg)
 	if(info.header.msgType == USER_ADDFRIEND_RESP && info.flag == OPERATE_FRIEND_AGREE)
 	{
 		//检查是否已是好友
-
-		//互为好友
-		db::user::MakeFriend(info.userId_to, info.userId);
-		db::user::MakeFriend(info.userId, info.userId_to);
-		fprintf(stderr, "makefriend\n");
+		if(!db::user::IsFriend(info.userId, info.userId_to))
+		{
+			//建立好友关系,互为好友
+			db::user::MakeFriend(info.userId_to, info.userId);
+			db::user::MakeFriend(info.userId, info.userId_to);
+			fprintf(stderr, "makefriend\n");
+		}
 	}
 
 	//查找目的用户
