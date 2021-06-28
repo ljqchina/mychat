@@ -23,6 +23,17 @@ namespace util
 		}   
 		return md5_string;
 	}
-
+	
+	std::string DateTime()
+	{
+		time_t t;
+		time(&t);
+		struct tm *tt;
+		tt = localtime(&t);
+		char s[100];
+		sprintf(s, "%d-%02d-%02d %02d:%02d:%02d", tt->tm_year+1900,
+				tt->tm_mon+1, tt->tm_mday, tt->tm_hour, tt->tm_min, tt->tm_sec);
+		return std::string(s);
+	}
 };
 

@@ -31,9 +31,7 @@ static void OnRead(struct bufferevent *bev, void *arg)
 			fprintf(stderr, "%s, No more Package data to receive:%d\n", __func__, len);
 			return;
 		}
-		memset(data, 0, sizeof(data));
-		bufferevent_read(bev, data, len);
-		fprintf(stderr, "%s:[%d][%s]\n", __func__, len, data);
+		memset(data, 0, sizeof(data)); bufferevent_read(bev, data, len); fprintf(stderr, "%s:[%d][%s]\n", __func__, len, data);
 		fprintf(stderr, "--------------------------\n");
 
 		std::string msg(data);
@@ -355,11 +353,11 @@ int MyChat::ProAddFriend(struct bufferevent *bev, const std::string &msg)
 		OfflineInfo oi;
 		oi.userId = info.userId;
 		oi.userId_to = info.userId_to;
+		oi.msgType = info.header.msgType;
 		oi.content = info.content; //虽然赋值了,只有好友请求消息才会打包该字段,响应消息不打包该字段
-		oi.type = info.header.msgType;
-		oi.datetime = "";
+		oi.datetime = util::DateTime();
 		//保存离线消息
-	
+		db::user::SaveOfflineMsg(oi);
 		return 0;
 	}
 	else

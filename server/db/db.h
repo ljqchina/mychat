@@ -19,6 +19,7 @@ namespace db
 		int RegisterUser(const RegisterInfo &info);
 		bool CheckPassword(const LoginInfo &pwd);
 		int QueryOfflineMsg(const std::string &userId, std::vector<OfflineInfo> &v);
+		int SaveOfflineMsg(const OfflineInfo &info);
 	};
 };
 

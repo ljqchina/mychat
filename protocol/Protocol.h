@@ -58,6 +58,7 @@ typedef struct OfflineInfo_
 {
 	int type;
 	int status;
+	int msgType;
 	std::string userId;
 	std::string userId_to;
 	std::string content;

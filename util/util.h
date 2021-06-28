@@ -7,7 +7,8 @@
 namespace util
 {
 	std::string md5(const std::string &str);
+	std::string DateTime(); //yyyy-m-d h:m:s
 };
 
 #endif
-
+ 
