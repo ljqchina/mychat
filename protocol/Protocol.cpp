@@ -347,6 +347,7 @@ int Protocol::ParseLogout(LogoutInfo &info, const std::string &msg)
 	return 0;
 }
 
+#if 0
 //打包离线消息
 int Protocol::PackOfflineMsg(const std::vector<OfflineInfo> &v, const std::string &userId_to, std::string &msg)
 {
@@ -383,6 +384,15 @@ int Protocol::PackOfflineMsg(const std::vector<OfflineInfo> &v, const std::strin
 
 		w.Key("type");
 		w.Int(a.type);
+
+		//如果离线消息是添加好友响应消息,则设置flag字段
+		if(a.type == USER_ADDFRIEND_RESP)
+		{
+			int flag;
+			w.Key("flag");
+			flag = atoi(a.resv.data());
+			w.Int(flag);
+		}
 		w.EndObject();
 	}
 	w.EndArray();
@@ -424,9 +434,17 @@ int Protocol::ParseOfflineMsg(std::vector<OfflineInfo> &v, const std::string &ms
 		oi.userId = msgObj["userid"].GetString();
 		oi.content = msgObj["content"].GetString();
 		oi.datetime = msgObj["datetime"].GetString();
-		oi.type = msgObj["type"].GetInt();
+		oi.msgType = msgObj["type"].GetInt();
 		v.push_back(oi);
 	}
+	return 0;
+}
+#endif
+
+//打包离线消息
+int Protocol::PackOfflineMsg(std::string &msg)
+{
+	PackLength(msg);
 	return 0;
 }
 

@@ -108,7 +108,7 @@ namespace db
 			const char *zTail;
 			sqlite3_stmt *stmt = NULL; 
 
-			sql = "select msgtype, msg, datetime from offlinemsg where userid_to='" + userId + "'";
+			sql = "select content, datetime, status from offlinemsg where userid='" + userId + "'";
 			int ret = sqlite3_prepare_v2(_db, sql.c_str(), -1, &stmt, &zTail);
 			if(ret != SQLITE_OK)
 			{
@@ -122,11 +122,11 @@ namespace db
 				const unsigned char *p;
 				OfflineInfo oi;
 				oi.userId = userId;
-			   	oi.type = sqlite3_column_int(stmt, col++);
 			   	p = sqlite3_column_text(stmt, col++);
 				oi.content = (char *)p;
 			   	p = sqlite3_column_text(stmt, col++);
 				oi.datetime = (char *)p;
+			   	oi.status = sqlite3_column_int(stmt, col++);
 				v.push_back(std::move(oi));
 			}
 			sqlite3_finalize(stmt);
@@ -138,9 +138,8 @@ namespace db
 			int ret = 0;
 			const char *zTail = nullptr;
 			std::string sql;
-			sql = "insert into offlinemsg(userid, userid_to, msgtype,\
-				   msg, datetime) \
-				   values(?, ?, ?, ?, ?)";
+			sql = "insert into offlinemsg(userid, content, datetime, status)\
+			values(?, ?, ?, ?)";
 			sqlite3_stmt * stmt = nullptr; 
 			ret = sqlite3_prepare_v2(_db, sql.c_str(), sql.length(), &stmt, &zTail);
 			if(ret != SQLITE_OK)
@@ -148,13 +147,30 @@ namespace db
 
 			int col = 1;
 			sqlite3_bind_text(stmt, col++, info.userId.c_str(), info.userId.length(), NULL);
-			sqlite3_bind_text(stmt, col++, info.userId_to.c_str(), info.userId_to.length(), NULL);
-			sqlite3_bind_int(stmt, col++, info.msgType);
 			sqlite3_bind_text(stmt, col++, info.content.c_str(), info.content.length(), NULL);
 			sqlite3_bind_text(stmt, col++, info.datetime.c_str(), info.datetime.length(), NULL);
-			//sqlite3_bind_int(stmt, col++, info.type);
-			//sqlite3_bind_int(stmt, col++, info.status);
+			sqlite3_bind_int(stmt, col++, info.status);
 
+			sqlite3_step(stmt);
+			sqlite3_reset(stmt);
+			sqlite3_finalize(stmt);
+			return 0;
+		}
+
+		int MakeFriend(const std::string &userId, const std::string &friendId)
+		{
+			int ret = 0;
+			const char *zTail = nullptr;
+			std::string sql;
+			sql = "insert into friend(userid, friend) values(?, ?)";
+			sqlite3_stmt * stmt = nullptr; 
+			ret = sqlite3_prepare_v2(_db, sql.c_str(), sql.length(), &stmt, &zTail);
+			if(ret != SQLITE_OK)
+				return -1;
+
+			int col = 1;
+			sqlite3_bind_text(stmt, col++, userId.c_str(), userId.length(), NULL);
+			sqlite3_bind_text(stmt, col++, friendId.c_str(), friendId.length(), NULL);
 			sqlite3_step(stmt);
 			sqlite3_reset(stmt);
 			sqlite3_finalize(stmt);

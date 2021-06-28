@@ -296,9 +296,13 @@ int MyChat::ProLogin(struct bufferevent *bev, const std::string &msg)
 	db::user::QueryOfflineMsg(info.userId, vec);
 	if(vec.size() == 0)
 		return 0;
-	m_Protocol.PackOfflineMsg(vec, info.userId, str);
-	pConn->Send(str);
-	fprintf(stderr, "Send OfflineMsg:%s\n", str.data());
+	for(auto &v : vec)
+	{
+		str = v.content;
+		m_Protocol.PackOfflineMsg(str);
+		pConn->Send(str);
+		fprintf(stderr, "Send OfflineMsg:%s\n", str.data());
+	}
 
 	return 0;
 }
@@ -343,19 +347,25 @@ int MyChat::ProAddFriend(struct bufferevent *bev, const std::string &msg)
 	//如果是好友响应消息,则判断同意/拒绝,如果同意则建立好友关系到好友数据表friend
 	if(info.header.msgType == USER_ADDFRIEND_RESP && info.flag == OPERATE_FRIEND_AGREE)
 	{
+		//检查是否已是好友
+
+		//互为好友
+		db::user::MakeFriend(info.userId_to, info.userId);
+		db::user::MakeFriend(info.userId, info.userId_to);
+		fprintf(stderr, "makefriend\n");
 	}
 
+	//查找目的用户
 	Conn *pConn = m_UserConn.FindUser(info.userId_to);
 	if(pConn == nullptr)
 	{
 		//目的用户未登录,需要将好友请求或者好友响应保存到离线消息表
 		fprintf(stderr, "addfriend user not login, save offline msg:%s\n", info.userId_to.data());
 		OfflineInfo oi;
-		oi.userId = info.userId;
-		oi.userId_to = info.userId_to;
-		oi.msgType = info.header.msgType;
-		oi.content = info.content; //虽然赋值了,只有好友请求消息才会打包该字段,响应消息不打包该字段
+		oi.userId = info.userId_to;
+		oi.content = msg;
 		oi.datetime = util::DateTime();
+		oi.status = 0;//暂时未用默认0
 		//保存离线消息
 		db::user::SaveOfflineMsg(oi);
 		return 0;

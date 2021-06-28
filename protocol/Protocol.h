@@ -56,11 +56,8 @@ typedef struct LogoutInfo_
 
 typedef struct OfflineInfo_
 {
-	int type;
 	int status;
-	int msgType;
 	std::string userId;
-	std::string userId_to;
 	std::string content;
 	std::string datetime;
 }OfflineInfo;
@@ -116,9 +113,10 @@ public:
     int ParseLogout(LogoutInfo &info, const std::string &msg);
 
 	//打包离线消息
-	int PackOfflineMsg(const std::vector<OfflineInfo> &v, const std::string &userId_to, std::string &msg);
+	int PackOfflineMsg(std::string &msg);
+	//int PackOfflineMsg(const std::vector<OfflineInfo> &v, const std::string &userId_to, std::string &msg);
 	//解析离线消息
-	int ParseOfflineMsg(std::vector<OfflineInfo> &v, const std::string &msg);
+	//int ParseOfflineMsg(std::vector<OfflineInfo> &v, const std::string &msg);
 
 	//打包添加好友消息
 	int PackAddFriend(const AddFriendInfo &info, std::string &msg);
