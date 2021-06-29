@@ -71,6 +71,14 @@ typedef struct AddFriendInfo_
 	std::string content;
 }AddFriendInfo;
 
+typedef struct DelFriendInfo_
+{
+	Header header;
+	std::string userId;
+	std::string userId_to;
+}DelFriendInfo;
+
+
 class Protocol
 {
 public:
@@ -122,6 +130,11 @@ public:
 	int PackAddFriend(const AddFriendInfo &info, std::string &msg);
 	//解析添加好友消息
 	int ParseAddFriend(AddFriendInfo &info, const std::string &msg);
+
+	//打包删除好友消息
+	int PackDelFriend(const DelFriendInfo &info, std::string &msg);
+	//解析删除好友消息
+	int ParseDelFriend(DelFriendInfo &info, const std::string &msg);
 private:
 
 };

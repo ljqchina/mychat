@@ -213,6 +213,20 @@ namespace db
 			sqlite3_finalize(stmt);
 			return count ? true : false;
 		}
+
+		int RemoveFriend(const std::string &userId, const std::string &friendId)
+		{
+			int ret = 0;
+			char *zErrMsg = NULL;
+			std::string sql;
+			sql = "delete from friend where userid='" + userId + "' and friend='" + friendId + "'";
+			ret = sqlite3_exec(_db, sql.data(), 0, 0, &zErrMsg);
+			if(ret == SQLITE_OK)
+				return 0;
+			else
+				return -1;
+
+		}
 	};
 };
 

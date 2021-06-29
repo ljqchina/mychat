@@ -166,20 +166,18 @@ void user_logout(int sock)
 	fprintf(stderr, "---------------------------------------\n\n");
 }
 
-//添加好友请求或者响应消息
-void user_addfriend(int sock)
+//添加好友请求
+void user_addfriend_req(int sock)
 {
     string msg;
     Protocol pt;
     AddFriendInfo info;
 
     info.header.version = "1.0.0.0";
-    //info.header.msgType = USER_ADDFRIEND_REQ;
-    info.header.msgType = USER_ADDFRIEND_RESP;
-    info.userId = "13000000002";
-    info.userId_to = "13000000001";
-	info.flag = 1; //响应时设置
-    //info.content = "添加好友"; //请求时设置
+    info.header.msgType = USER_ADDFRIEND_REQ;
+    info.userId = "13000000001";
+    info.userId_to = "13000000002";
+    info.content = "添加好友";
 
     pt.PackAddFriend(info, msg);
     send(sock, msg.data(), msg.size(), 0);
@@ -205,6 +203,99 @@ void user_addfriend(int sock)
 	fprintf(stderr, "---------------------------------------\n\n");
 }
 
+//添加好友响应消息
+void user_addfriend_resp(int sock)
+{
+    string msg;
+    Protocol pt;
+    AddFriendInfo info;
+
+    info.header.version = "1.0.0.0";
+    info.header.msgType = USER_ADDFRIEND_RESP;
+    info.userId = "13000000002";
+    info.userId_to = "13000000001";
+	info.flag = 1;
+
+    pt.PackAddFriend(info, msg);
+    send(sock, msg.data(), msg.size(), 0);
+
+    fprintf(stderr, "%s request:%s\n\n", __func__, msg.data());
+
+	//receive response msg
+	char data[1024];
+	memset(data, 0, sizeof(data));
+	recv(sock, data, 4, 0);
+	int len = atoi(data);
+	memset(data, 0, sizeof(data));
+	recv(sock, data, len, 0);
+
+    fprintf(stderr, "%s response:%s\n", __func__, data);
+
+	msg = std::string(data);
+	pt.ParseAddFriend(info, msg);
+	if(info.header.msgType == USER_ADDFRIEND_REQ)
+		fprintf(stderr, "recved add friend request:%d\n", info.header.msgType);
+	if(info.header.msgType == USER_ADDFRIEND_RESP)
+		fprintf(stderr, "recved add friend result:%d[%d]\n", info.header.msgType, info.flag); 
+	fprintf(stderr, "---------------------------------------\n\n");
+}
+
+//删除好友请求
+void user_delfriend_req(int sock)
+{
+    string msg;
+    Protocol pt;
+    DelFriendInfo info;
+
+    info.header.version = "1.0.0.0";
+    info.header.msgType = USER_DELFRIEND_REQ;
+    info.userId = "13000000001";
+    info.userId_to = "13000000002";
+
+    pt.PackDelFriend(info, msg);
+    send(sock, msg.data(), msg.size(), 0);
+
+    fprintf(stderr, "%s request:%s\n\n", __func__, msg.data());
+
+	//receive response msg
+	char data[1024];
+	memset(data, 0, sizeof(data));
+	recv(sock, data, 4, 0);
+	int len = atoi(data);
+	memset(data, 0, sizeof(data));
+	recv(sock, data, len, 0);
+
+    fprintf(stderr, "%s response:%s\n", __func__, data);
+
+	msg = std::string(data);
+	pt.ParseDelFriend(info, msg);
+	fprintf(stderr, "recved del friend result:%d[%d]\n", info.header.msgType, info.header.respCode); 
+	fprintf(stderr, "---------------------------------------\n\n");
+}
+
+//删除好友响应
+void user_delfriend_resp(int sock)
+{
+    string msg;
+    Protocol pt;
+    DelFriendInfo info;
+
+    info.header.version = "1.0.0.0";
+    info.header.msgType = USER_DELFRIEND_RESP;
+    info.userId = "13000000002";
+    info.userId_to = "13000000001";
+
+    pt.PackDelFriend(info, msg);
+    send(sock, msg.data(), msg.size(), 0);
+
+    fprintf(stderr, "%s request:%s\n\n", __func__, msg.data());
+}
+
+
+/***************************************************************/
+/***************************************************************/
+//MAIN FUNCTION
+/////////////////////////////////////////////////////////////////
 int main(int argc, char **argv)
 {
 	if(argc != 3)
@@ -247,7 +338,16 @@ int main(int argc, char **argv)
     //user_logout(sock);
 
 	//4. 添加好友请求
-	//user_addfriend(sock);
+	//user_addfriend_req(sock);
+
+	//5. 添加好友响应
+	//user_addfriend_resp(sock);
+
+	//6. 删除好友
+	//user_delfriend_req(sock);
+
+	//7. 删除好友响应
+	user_delfriend_resp(sock);
 
 	close(sock);
 	printf("end\n");

@@ -74,6 +74,13 @@ static void OnRead(struct bufferevent *bev, void *arg)
 				pmc->ProAddFriend(bev, msg);
 				break;
 			}
+			//删除好友请求及好友响应
+			case USER_DELFRIEND_REQ:
+			case USER_DELFRIEND_RESP:
+			{
+				pmc->ProDelFriend(bev, msg);
+				break;
+			}
 			default:
 				fprintf(stderr, "msgType error:%d\n", h.msgType);
 				break;
@@ -377,6 +384,57 @@ int MyChat::ProAddFriend(struct bufferevent *bev, const std::string &msg)
 	{
 		//找到目的用户,直接转发好友请求或者好友响应到目的用户
 		fprintf(stderr, "send add friend request/result to user:%s\n", info.userId_to.data());
+		pConn->Send(msg);
+	}
+	return 0;
+}
+
+//处理删除好友请求和删除好友响应
+int MyChat::ProDelFriend(struct bufferevent *bev, const std::string &msg)
+{
+	DelFriendInfo info; 
+	if(m_Protocol.ParseDelFriend(info, msg) != 0)
+		return -1;
+
+	if(info.header.msgType == USER_DELFRIEND_RESP)
+	{
+		fprintf(stderr, "recv user delfriend response, msg:%s\n", msg.data());
+		return 0;
+	}
+
+	//解除好友关系(双向)并向删除请求者返回一条服务器操作成功消息
+	db::user::RemoveFriend(info.userId, info.userId_to);
+	db::user::RemoveFriend(info.userId_to, info.userId);
+	//查找删除好友请求用户
+	Conn *pConn = m_UserConn.FindUser(info.userId);
+	if(pConn != nullptr)
+	{
+		std::string str;
+		DelFriendInfo di = info;
+		di.header.msgType = USER_DELFRIEND_RESP;
+		di.header.respCode = ERR_SUCCESS;
+		m_Protocol.PackDelFriend(di, str);
+	}
+
+	//查找目的用户
+	pConn = m_UserConn.FindUser(info.userId_to);
+	if(pConn == nullptr)
+	{
+		//目的用户未登录,需要将删除好友请求或者删除好友响应保存到离线消息表
+		fprintf(stderr, "delfriend user not login, save offline msg:%s\n", info.userId_to.data());
+		OfflineInfo oi;
+		oi.userId = info.userId_to;
+		oi.content = msg;
+		oi.datetime = util::DateTime();
+		oi.status = 0;//暂时未用默认0
+		//保存离线消息
+		db::user::SaveOfflineMsg(oi);
+		return 0;
+	}
+	else
+	{
+		//找到目的用户,直接转发删除好友请求或者删除好友响应到目的用户
+		fprintf(stderr, "send del friend request/result to user:%s\n", info.userId_to.data());
 		pConn->Send(msg);
 	}
 	return 0;

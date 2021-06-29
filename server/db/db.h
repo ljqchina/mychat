@@ -23,6 +23,7 @@ namespace db
 		int RemoveOfflineMsg(const std::string &userId);
 		int MakeFriend(const std::string &userId, const std::string &friendId);
 		bool IsFriend(const std::string &userId, const std::string &friendId);
+		int RemoveFriend(const std::string &userId, const std::string &friendId);
 	};
 };
 
