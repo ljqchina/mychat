@@ -3,7 +3,10 @@
 #include "errcode.h"
 
 Protocol::Protocol()
-{ } Protocol::~Protocol()
+{
+}
+
+Protocol::~Protocol()
 {
 }
 
@@ -537,7 +540,6 @@ int Protocol::PackDelFriend(const DelFriendInfo &info, std::string &msg)
 	msg = buf.GetString();
 	PackLength(msg);
 	return 0;
-
 }
 
 //解析删除好友消息,服务器收到后直接转发到目标用户
@@ -567,6 +569,74 @@ int Protocol::ParseDelFriend(DelFriendInfo &info, const std::string &msg)
     {
 		ParseHeaderResp(doc, info.header);
 	}
+	return 0;
+}
+
+//打包聊天消息
+int Protocol::PackChat(const ChatInfo &info, std::string &msg)
+{
+	rapidjson::StringBuffer buf;
+    rapidjson::Writer<rapidjson::StringBuffer> w(buf);
+
+    w.StartObject();
+    PackHeader(w, info.header);
+
+    w.Key("userid");
+    w.String(info.userId.data());
+
+    w.Key("userid_to");
+    w.String(info.userId_to.data());
+
+    w.Key("content");
+    w.String(info.content.data());
+
+	//如果是响应报文，则仅设置响应字段
+	/*
+    if(info.header.msgType == USER_CHAT_RESP)
+    {
+        PackHeaderResp(w, info.header);
+    }
+	*/
+	//打包表情图片信息
+
+	w.EndObject();
+	msg = buf.GetString();
+	PackLength(msg);
+	return 0;
+}
+
+//解析聊天消息
+int Protocol::ParseChat(ChatInfo &info, const std::string &msg)
+{
+	rapidjson::Document doc;
+    if(doc.Parse(msg.data()).HasParseError())
+        return -1;
+
+    if(ParseHeader(doc, info.header) != 0)
+    {
+        fprintf(stderr, "Parse Header error from json string:\n");
+        fprintf(stderr, "%s\n", msg.data());
+        return -1;
+    }
+
+    if(!doc.HasMember("userid"))
+        return -1;
+    info.userId = doc["userid"].GetString();
+
+    if(!doc.HasMember("userid_to"))
+        return -1;
+    info.userId_to = doc["userid_to"].GetString();
+
+	//如果是响应报文，则需要解析响应字段
+	/*
+    if(info.header.msgType == USER_DELFRIEND_RESP)
+    {
+		ParseHeaderResp(doc, info.header);
+	}
+	*/
+    if(!doc.HasMember("content"))
+        return -1;
+    info.userId_to = doc["content"].GetString();
 	return 0;
 }
 

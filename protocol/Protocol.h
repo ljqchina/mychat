@@ -78,6 +78,21 @@ typedef struct DelFriendInfo_
 	std::string userId_to;
 }DelFriendInfo;
 
+typedef struct ImageInfo_
+{
+	int flag; //1:data存放的是图片编号ID,2:图片内容的base64编码
+	int type; //图片类型,flag为2时使用,1:jpg, 2:png, ...
+	std::string data; //
+}ImageInfo;
+
+typedef struct ChatInfo_
+{
+	Header header;
+	std::string userId;
+	std::string userId_to;
+	std::string content;
+	std::vector<ImageInfo> imagetVec;//打包时从这里取表情图片信息
+}ChatInfo;
 
 class Protocol
 {
@@ -135,8 +150,11 @@ public:
 	int PackDelFriend(const DelFriendInfo &info, std::string &msg);
 	//解析删除好友消息
 	int ParseDelFriend(DelFriendInfo &info, const std::string &msg);
-private:
 
+	//打包聊天消息
+	int PackChat(const ChatInfo &info, std::string &msg);
+	//解析聊天消息
+	int ParseChat(ChatInfo &info, const std::string &msg); private: 
 };
 
 #endif
