@@ -291,6 +291,25 @@ void user_delfriend_resp(int sock)
     fprintf(stderr, "%s request:%s\n\n", __func__, msg.data());
 }
 
+//好友聊天请求
+void user_chat_req(int sock)
+{
+    string msg;
+    Protocol pt;
+    ChatInfo info;
+
+    info.header.version = "1.0.0.0";
+    info.header.msgType = USER_CHAT_REQ;
+    info.userId = "13000000001";
+    info.userId_to = "13000000002";
+	info.content = "hello everyone!";
+
+    pt.PackChat(info, msg);
+    send(sock, msg.data(), msg.size(), 0);
+
+    fprintf(stderr, "%s request:%s\n\n", __func__, msg.data());
+}
+
 
 /***************************************************************/
 /***************************************************************/
@@ -347,7 +366,10 @@ int main(int argc, char **argv)
 	//user_delfriend_req(sock);
 
 	//7. 删除好友响应
-	user_delfriend_resp(sock);
+	//user_delfriend_resp(sock);
+
+	//8. 好友聊天消息
+	//user_chat_req(sock);
 
 	close(sock);
 	printf("end\n");

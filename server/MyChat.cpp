@@ -81,6 +81,13 @@ static void OnRead(struct bufferevent *bev, void *arg)
 				pmc->ProDelFriend(bev, msg);
 				break;
 			}
+			//聊天消息请求,暂没有响应
+			case USER_CHAT_REQ:
+			//case USER_CHAT_RESP:
+			{
+				pmc->ProChat(bev, msg);
+				break;
+			}
 			default:
 				fprintf(stderr, "msgType error:%d\n", h.msgType);
 				break;
@@ -439,4 +446,36 @@ int MyChat::ProDelFriend(struct bufferevent *bev, const std::string &msg)
 	}
 	return 0;
 }
+
+//处理好友聊天请求和响应,暂不做响应
+int MyChat::ProChat(struct bufferevent *bev, const std::string &msg)
+{
+	ChatInfo info; 
+	if(m_Protocol.ParseChat(info, msg) != 0)
+		return -1;
+
+	//查找目的用户
+	Conn *pConn = m_UserConn.FindUser(info.userId_to);
+	if(pConn == nullptr)
+	{
+		//目的用户未登录,需要将聊天消息保存到离线消息表
+		fprintf(stderr, "chat dest user not login, save offline msg:%s\n", info.userId_to.data());
+		OfflineInfo oi;
+		oi.userId = info.userId_to;
+		oi.content = msg;
+		oi.datetime = util::DateTime();
+		oi.status = 0;//暂时未用默认0
+		//保存离线消息
+		db::user::SaveOfflineMsg(oi);
+		return 0;
+	}
+	else
+	{
+		//找到目的用户,直接转发好友聊天消息到目的用户
+		fprintf(stderr, "send chat request/result to user:%s\n", info.userId_to.data());
+		pConn->Send(msg);
+	}	
+	return 0;
+}
+
 

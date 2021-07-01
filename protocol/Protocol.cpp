@@ -636,7 +636,7 @@ int Protocol::ParseChat(ChatInfo &info, const std::string &msg)
 	*/
     if(!doc.HasMember("content"))
         return -1;
-    info.userId_to = doc["content"].GetString();
+    info.content = doc["content"].GetString();
 	return 0;
 }
 
